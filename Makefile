@@ -10,9 +10,9 @@ CURRENT_WORKING_DIR != pwd
 EMSDK_VERSION != cat emsdk_version
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 
-RAYLIB_VERSION ?= 5.5
+RAYLIB_VERSION_TAG ?= 5.5
 
-IMGUI_TAG ?= v1.92.2
+IMGUI_VERSION_TAG ?= v1.92.2
 
 SOURCES := \
 	src/main.cc
@@ -47,7 +47,7 @@ third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_
 
 third_party/imgui/:
 	test -d third_party/imgui || git clone https://github.com/ocornut/imgui.git third_party/imgui
-	cd third_party/imgui && git checkout ${IMGUI_TAG}
+	cd third_party/imgui && git checkout ${IMGUI_VERSION_TAG}
 
 IMGUI_SOURCES := \
 	third_party/imgui/imgui.cpp \
@@ -85,6 +85,6 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	@rm -rf third_party/raylib_out
 	@rm -rf third_party/rlImGui_out
 	@rm -rf third_party/imgui_out
-	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION}"
-	cd third_party/imgui && git fetch && git checkout "${IMGUI_TAG}"
+	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
+	cd third_party/imgui && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	cd third_party/rlImGui_git && git pull
