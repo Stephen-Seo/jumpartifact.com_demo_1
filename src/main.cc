@@ -43,6 +43,9 @@ void ja_demo1_update(void *ud) {
     ClearBackground(DARKGRAY);
     rlImGuiBegin();
 
+    // Double the font size.
+    ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
+
     bool open = true;
     ImGui::ShowDemoWindow(&open);
 
@@ -50,6 +53,9 @@ void ja_demo1_update(void *ud) {
     if (ImGui::Begin("Test Window", &open)) {
         ImGui::Text("Test text in the Test Window.");
     }
+
+    // Cleanup of doubling the font size.
+    ImGui::PopFont();
 
     ImGui::End();
 
