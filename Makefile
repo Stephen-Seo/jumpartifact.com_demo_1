@@ -1,0 +1,80 @@
+ifdef RELEASE
+	COMMON_FLAGS := -O2 -DNDEBUG
+else
+	COMMON_FLAGS := -Og -g -sASSERTIONS
+endif
+
+INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui -Ithird_party/rlImGui_git
+
+CURRENT_WORKING_DIR != pwd
+EMSDK_VERSION != cat emsdk_version
+EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
+
+IMGUI_TAG ?= v1.92.2
+
+SOURCES := \
+	src/main.cc
+HEADERS :=
+
+OBJDIR := objdir
+OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
+
+all: dist/index.html
+
+dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS}
+	@mkdir -p dist
+	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
+		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
+		-Lthird_party/raylib_out/lib -lraylib \
+		-L third_party/imgui_out -limgui \
+		third_party/rlImGui_out/rlImGui.cpp.o \
+		--shell-file custom_shell.html \
+		-sEXPORTED_FUNCTIONS=_main \
+		-SEXPORTED_RUNTIME_METHODS=ccall \
+		${COMMON_FLAGS} \
+		${OBJECTS}
+	ln -sf ja_demo1.html dist/index.html
+
+third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh
+	/usr/bin/env EMSDK_ENV_SCRIPT="${EMSDK_SHELL}" ./third_party/wasm_make_raylib.sh -o ./third_party/raylib_out -c ./third_party/raylib_git
+
+third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/lib/libraylib.a third_party/imgui/
+	@mkdir -p third_party/rlImGui_out
+	test -d third_party/rlImGui_git || git clone https://github.com/raylib-extras/rlImGui.git third_party/rlImGui_git
+	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
+
+third_party/imgui/:
+	test -d third_party/imgui || git clone https://github.com/ocornut/imgui.git third_party/imgui
+	cd third_party/imgui && git checkout ${IMGUI_TAG}
+
+IMGUI_SOURCES := \
+	third_party/imgui/imgui.cpp \
+	third_party/imgui/imgui_demo.cpp \
+	third_party/imgui/imgui_draw.cpp \
+	third_party/imgui/imgui_tables.cpp \
+	third_party/imgui/imgui_widgets.cpp
+IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
+
+third_party/imgui_out/libimgui.a: third_party/imgui/ ${IMGUI_OBJECTS}
+	@mkdir -p third_party/imgui_out
+	source ${EMSDK_SHELL} >&/dev/null && emar rcs third_party/imgui_out/libimgui.a ${IMGUI_OBJECTS}
+
+${OBJDIR}/third_party/imgui/%.cpp.o: third_party/imgui/%.cpp
+	@mkdir -p ${OBJDIR}/third_party/imgui
+	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
+
+third_party/emsdk_git/emsdk_env.sh:
+	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
+
+${OBJDIR}/%.cc.o: %.cc ${HEADERS} third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a
+	@mkdir -p "$(dir $@)"
+	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
+
+.PHONY: clean
+
+clean:
+	rm -rf dist
+	rm -rf ${OBJDIR}
+	rm -rf third_party/raylib_out
+	rm -rf third_party/rlImGui_out
+	rm -rf third_party/imgui_out
