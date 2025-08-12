@@ -62,7 +62,7 @@ int main() {
 
     SetWindowSize(canvas_get_width(), canvas_get_height());
 
-    rlImGuiSetup(false);
+    rlImGuiSetup(true);
 
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, false, resize_event_callback);
 
