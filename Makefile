@@ -28,7 +28,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
 		-Lthird_party/raylib_out/lib -lraylib \
-		-L third_party/imgui_out -limgui \
+		-Lthird_party/imgui_out -limgui \
 		third_party/rlImGui_out/rlImGui.cpp.o \
 		--shell-file custom_shell.html \
 		-sEXPORTED_FUNCTIONS=_main \
