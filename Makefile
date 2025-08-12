@@ -55,11 +55,11 @@ IMGUI_SOURCES := \
 	third_party/imgui/imgui_widgets.cpp
 IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
 
-third_party/imgui_out/libimgui.a: third_party/imgui/ ${IMGUI_OBJECTS}
+third_party/imgui_out/libimgui.a: third_party/imgui/ third_party/emsdk_git/emsdk_env.sh ${IMGUI_OBJECTS}
 	@mkdir -p third_party/imgui_out
 	source ${EMSDK_SHELL} >&/dev/null && emar rcs third_party/imgui_out/libimgui.a ${IMGUI_OBJECTS}
 
-${OBJDIR}/third_party/imgui/%.cpp.o: third_party/imgui/%.cpp
+${OBJDIR}/third_party/imgui/%.cpp.o: third_party/imgui/%.cpp third_party/emsdk_git/emsdk_env.sh
 	@mkdir -p ${OBJDIR}/third_party/imgui
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
