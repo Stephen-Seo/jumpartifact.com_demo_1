@@ -23,13 +23,17 @@ EM_BOOL resize_event_callback(int event_type, const EmscriptenUiEvent *event, vo
 } // extern "C"
 
 void ja_demo1_update(void *ud) {
-    emscripten_run_script("console.log(\"update iteration\");");
     BeginDrawing();
     ClearBackground(DARKGRAY);
     rlImGuiBegin();
 
     bool open = true;
     ImGui::ShowDemoWindow(&open);
+
+    open = true;
+    if (ImGui::Begin("Test Window", &open)) {
+        ImGui::Text("Test text in the Test Window.");
+    }
 
     ImGui::End();
 

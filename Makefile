@@ -1,7 +1,7 @@
 ifdef RELEASE
 	COMMON_FLAGS := -O2 -DNDEBUG
 else
-	COMMON_FLAGS := -Og -g -sASSERTIONS
+	COMMON_FLAGS := -sASSERTIONS
 endif
 
 INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui -Ithird_party/rlImGui_git
