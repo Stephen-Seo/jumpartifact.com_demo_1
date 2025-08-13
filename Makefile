@@ -90,4 +90,4 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	cd third_party/rlImGui_git && git pull
 
 format:
-	clang-format -i --style=Google ${SOURCES} ${HEADERS}
+	test -x /usr/bin/clang-format && clang-format -i --style=Google ${SOURCES} ${HEADERS} || /usr/bin/true
