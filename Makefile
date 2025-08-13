@@ -71,7 +71,7 @@ ${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/lib/libraylib.a
 	@mkdir -p "$(dir $@)"
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
-.PHONY: clean update
+.PHONY: clean update format
 
 clean:
 	rm -rf dist
@@ -88,3 +88,6 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
 	cd third_party/imgui && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	cd third_party/rlImGui_git && git pull
+
+format:
+	clang-format -i --style=Google ${SOURCES} ${HEADERS}
