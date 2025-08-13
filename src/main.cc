@@ -14,11 +14,15 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+// third-party includes
 #include <emscripten.h>
 #include <emscripten/html5.h>
-#include <imgui.h>
 #include <raylib.h>
 #include <rlImGui.h>
+
+// Local includes
+#include "demo_scene.h"
+#include "scene_system.h"
 
 EM_JS(int, canvas_get_width, (),
       { return document.getElementById("canvas").clientWidth; });
@@ -38,27 +42,15 @@ EM_BOOL resize_event_callback(int event_type, const EmscriptenUiEvent *event,
 }  // extern "C"
 
 void ja_demo1_update(void *ud) {
+  SceneSystem *scenes = reinterpret_cast<SceneSystem *>(ud);
+
+  scenes->update();
+
   BeginDrawing();
   ClearBackground(DARKGRAY);
-  rlImGuiBegin();
 
-  // Double the font size.
-  ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
+  scenes->draw();
 
-  bool open = true;
-  ImGui::ShowDemoWindow(&open);
-
-  open = true;
-  if (ImGui::Begin("Test Window", &open)) {
-    ImGui::Text("Test text in the Test Window.");
-  }
-
-  // Cleanup of doubling the font size.
-  ImGui::PopFont();
-
-  ImGui::End();
-
-  rlImGuiEnd();
   EndDrawing();
 }
 
@@ -72,7 +64,11 @@ int main() {
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, false,
                                  resize_event_callback);
 
-  emscripten_set_main_loop_arg(ja_demo1_update, nullptr, 0, 1);
+  SceneSystem scenes{};
+  scenes.push_scene(
+      []() -> SceneSystem::SceneType { return std::make_unique<DemoScene>(); });
+
+  emscripten_set_main_loop_arg(ja_demo1_update, &scenes, 0, 1);
 
   return 0;
 }
