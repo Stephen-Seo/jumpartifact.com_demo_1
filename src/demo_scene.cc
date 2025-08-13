@@ -5,7 +5,7 @@
 #include <raylib.h>
 #include <rlImGui.h>
 
-DemoScene::DemoScene() : dt_idx(0) {
+DemoScene::DemoScene() : flags{}, dt_idx(0) {
   for (int idx = 0; idx < DT_ARR_SIZE; ++idx) {
     dt[idx] = 1.0F;
   }
@@ -23,13 +23,19 @@ bool DemoScene::draw(SceneSystem *ctx) {
   rlImGuiBegin();
 
   // Double the font size.
-  ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
+  if (!flags.test(0)) {
+    ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
+  }
 
   bool open = true;
   ImGui::ShowDemoWindow(&open);
 
   open = true;
   if (ImGui::Begin("Test Window", &open)) {
+    if (ImGui::Button("Toggle Font Size")) {
+      flags.set(1);
+    }
+
     float avg = 0.0F;
     for (int idx = 0; idx < DT_ARR_SIZE; ++idx) {
       avg += dt[idx];
@@ -39,10 +45,17 @@ bool DemoScene::draw(SceneSystem *ctx) {
   }
 
   // Cleanup of doubling the font size.
-  ImGui::PopFont();
+  if (!flags.test(0)) {
+    ImGui::PopFont();
+  }
 
   ImGui::End();
 
   rlImGuiEnd();
+
+  if (flags.test(1)) {
+    flags.reset(1);
+    flags.flip(0);
+  }
   return false;
 }

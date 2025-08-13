@@ -3,6 +3,9 @@
 
 #include "scene_system.h"
 
+// standard library includes
+#include <bitset>
+
 constexpr int DT_ARR_SIZE = 10;
 
 class DemoScene : public Scene {
@@ -14,6 +17,9 @@ class DemoScene : public Scene {
   virtual bool draw(SceneSystem *ctx) override;
 
  private:
+  // 0 - double font size disabled
+  // 1 - queued toggle flag 0
+  std::bitset<32> flags;
   float dt[DT_ARR_SIZE];
   int dt_idx;
 };
