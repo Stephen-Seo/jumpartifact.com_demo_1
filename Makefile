@@ -62,7 +62,7 @@ third_party/imgui_out/libimgui.a: third_party/imgui/ third_party/emsdk_git/emsdk
 
 ${OBJDIR}/third_party/imgui/%.cpp.o: third_party/imgui/%.cpp third_party/emsdk_git/emsdk_env.sh
 	@mkdir -p ${OBJDIR}/third_party/imgui
-	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
+	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
 
 third_party/emsdk_git/emsdk_env.sh:
 	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
