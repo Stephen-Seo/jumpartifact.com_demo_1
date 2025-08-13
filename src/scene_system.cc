@@ -41,7 +41,7 @@ void SceneSystem::update() {
 
 void SceneSystem::draw() {
   for (auto iter = scene_stack.rbegin(); iter != scene_stack.rend(); ++iter) {
-    if (!(*iter)->draw(this)) {
+    if ((*iter)->draw(this)) {
       break;
     }
   }
