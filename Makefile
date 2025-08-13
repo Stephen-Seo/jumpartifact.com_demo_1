@@ -14,9 +14,8 @@ RAYLIB_VERSION_TAG ?= 5.5
 
 IMGUI_VERSION_TAG ?= v1.92.2
 
-SOURCES := \
-	src/main.cc
-HEADERS :=
+SOURCES != find src -regex '.*\.cc$$'
+HEADERS != find src -regex '.*\.h$$'
 
 OBJDIR := objdir
 OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
