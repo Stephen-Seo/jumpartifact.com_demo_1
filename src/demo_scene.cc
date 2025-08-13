@@ -21,7 +21,7 @@
 #include <raylib.h>
 #include <rlImGui.h>
 
-DemoScene::DemoScene() : Scene(), flags{}, dt_idx(0) {
+DemoScene::DemoScene(SceneSystem *ctx) : Scene(ctx), flags{}, dt_idx(0) {
   for (int idx = 0; idx < dt.size(); ++idx) {
     dt[idx] = 1.0F;
   }

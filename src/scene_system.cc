@@ -16,7 +16,7 @@
 
 #include "scene_system.h"
 
-Scene::Scene() {}
+Scene::Scene(SceneSystem*) {}
 Scene::~Scene() {}
 
 SceneSystem::SceneSystem() : scene_stack() {}
@@ -51,8 +51,7 @@ void SceneSystem::clear_scenes() {
   queued_actions.emplace_back(ActionType::CLEAR, std::nullopt);
 }
 
-void SceneSystem::push_scene(
-    std::function<SceneSystem::SceneType()> scene_builder) {
+void SceneSystem::push_scene(SceneFnType scene_builder) {
   queued_actions.emplace_back(ActionType::PUSH, scene_builder);
 }
 
@@ -68,7 +67,8 @@ void SceneSystem::handle_actions() {
         break;
       case ActionType::PUSH:
         if (queued_actions.front().scene_builder) {
-          scene_stack.push_back(queued_actions.front().scene_builder.value()());
+          scene_stack.push_back(
+              queued_actions.front().scene_builder.value()(this));
         }
         break;
       case ActionType::POP:

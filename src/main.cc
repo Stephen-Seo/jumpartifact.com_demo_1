@@ -65,8 +65,9 @@ int main() {
                                  resize_event_callback);
 
   SceneSystem scenes{};
-  scenes.push_scene(
-      []() -> SceneSystem::SceneType { return std::make_unique<DemoScene>(); });
+  scenes.push_scene([](SceneSystem *ctx) -> SceneSystem::SceneType {
+    return std::make_unique<DemoScene>(ctx);
+  });
 
   emscripten_set_main_loop_arg(ja_demo1_update, &scenes, 0, 1);
 

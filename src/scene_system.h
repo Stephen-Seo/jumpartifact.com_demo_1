@@ -28,7 +28,7 @@ class SceneSystem;
 
 class Scene {
  public:
-  Scene();
+  Scene(SceneSystem*);
   virtual ~Scene();
 
   virtual void update(SceneSystem* ctx, float dt) = 0;
@@ -41,7 +41,8 @@ class Scene {
 class SceneSystem {
  public:
   using SceneType = std::unique_ptr<Scene>;
-  using OptBuilderType = std::optional<std::function<SceneType()>>;
+  using SceneFnType = std::function<SceneType(SceneSystem*)>;
+  using OptBuilderType = std::optional<SceneFnType>;
 
   SceneSystem();
   ~SceneSystem();
@@ -58,7 +59,7 @@ class SceneSystem {
   void draw();
 
   void clear_scenes();
-  void push_scene(std::function<SceneType()> scene_builder);
+  void push_scene(SceneFnType scene_builder);
   void pop_scene();
 
  private:

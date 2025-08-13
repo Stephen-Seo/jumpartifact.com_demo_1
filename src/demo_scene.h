@@ -27,7 +27,7 @@ constexpr int DT_ARR_SIZE = 10;
 
 class DemoScene : public Scene {
  public:
-  DemoScene();
+  DemoScene(SceneSystem *);
   virtual ~DemoScene() override;
 
   virtual void update(SceneSystem *ctx, float dt) override;
