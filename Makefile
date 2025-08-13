@@ -14,6 +14,8 @@ RAYLIB_VERSION_TAG ?= 5.5
 
 IMGUI_VERSION_TAG ?= v1.92.2
 
+RLIMGUI_COMMIT ?= 4d8a61842903978bc42adf3347cd34f4e6524efc
+
 SOURCES != find src -regex '.*\.cc$$'
 HEADERS != find src -regex '.*\.h$$'
 
@@ -41,7 +43,7 @@ third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh
 
 third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/lib/libraylib.a third_party/imgui/
 	@mkdir -p third_party/rlImGui_out
-	test -d third_party/rlImGui_git || git clone https://github.com/raylib-extras/rlImGui.git third_party/rlImGui_git
+	test -d third_party/rlImGui_git || git clone https://github.com/raylib-extras/rlImGui.git third_party/rlImGui_git && cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
 
 third_party/imgui/:
@@ -87,7 +89,7 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
 	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
 	cd third_party/imgui && git fetch && git checkout "${IMGUI_VERSION_TAG}"
-	cd third_party/rlImGui_git && git pull
+	cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 
 format:
 	test -x /usr/bin/clang-format && clang-format -i --style=Google ${SOURCES} ${HEADERS} || /usr/bin/true
