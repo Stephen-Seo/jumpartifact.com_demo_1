@@ -17,6 +17,7 @@
 #ifndef SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_SCENE_SYSTEM_H_
 #define SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_SCENE_SYSTEM_H_
 
+#include <bitset>
 #include <chrono>
 #include <deque>
 #include <functional>
@@ -62,6 +63,8 @@ class SceneSystem {
   void push_scene(SceneFnType scene_builder);
   void pop_scene();
 
+  bool pop_was_queued() const;
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -72,6 +75,8 @@ class SceneSystem {
   std::chrono::time_point<std::chrono::steady_clock> time_point;
   std::deque<SceneType> scene_stack;
   std::deque<Action> queued_actions;
+  // 0 - pop was queued, remains true until pop occurs.
+  std::bitset<32> flags;
 
   void handle_actions();
 };

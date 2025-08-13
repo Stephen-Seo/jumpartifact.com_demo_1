@@ -19,7 +19,7 @@
 Scene::Scene(SceneSystem*) {}
 Scene::~Scene() {}
 
-SceneSystem::SceneSystem() : scene_stack() {}
+SceneSystem::SceneSystem() : scene_stack(), flags() {}
 
 SceneSystem::~SceneSystem() {}
 
@@ -57,7 +57,10 @@ void SceneSystem::push_scene(SceneFnType scene_builder) {
 
 void SceneSystem::pop_scene() {
   queued_actions.emplace_back(ActionType::POP, std::nullopt);
+  flags.set(0);
 }
+
+bool SceneSystem::pop_was_queued() const { return flags.test(0); }
 
 void SceneSystem::handle_actions() {
   while (!queued_actions.empty()) {
@@ -79,4 +82,5 @@ void SceneSystem::handle_actions() {
     }
     queued_actions.pop_front();
   }
+  flags.reset(0);
 }
