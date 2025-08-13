@@ -20,6 +20,7 @@
 #include "scene_system.h"
 
 // standard library includes
+#include <array>
 #include <bitset>
 
 constexpr int DT_ARR_SIZE = 10;
@@ -36,7 +37,7 @@ class DemoScene : public Scene {
   // 0 - double font size disabled
   // 1 - queued toggle flag 0
   std::bitset<32> flags;
-  float dt[DT_ARR_SIZE];
+  std::array<float, DT_ARR_SIZE> dt;
   int dt_idx;
 };
 

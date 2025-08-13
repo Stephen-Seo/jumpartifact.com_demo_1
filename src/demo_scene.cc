@@ -22,7 +22,7 @@
 #include <rlImGui.h>
 
 DemoScene::DemoScene() : Scene(), flags{}, dt_idx(0) {
-  for (int idx = 0; idx < DT_ARR_SIZE; ++idx) {
+  for (int idx = 0; idx < dt.size(); ++idx) {
     dt[idx] = 1.0F;
   }
 }
@@ -30,7 +30,7 @@ DemoScene::~DemoScene() {}
 
 void DemoScene::update(SceneSystem *ctx, float dt) {
   this->dt[dt_idx++] = dt;
-  if (dt_idx >= DT_ARR_SIZE) {
+  if (dt_idx >= this->dt.size()) {
     dt_idx = 0;
   }
 }
@@ -53,10 +53,10 @@ bool DemoScene::draw(SceneSystem *ctx) {
     }
 
     float avg = 0.0F;
-    for (int idx = 0; idx < DT_ARR_SIZE; ++idx) {
+    for (int idx = 0; idx < dt.size(); ++idx) {
       avg += dt[idx];
     }
-    avg /= static_cast<float>(DT_ARR_SIZE);
+    avg /= static_cast<float>(dt.size());
     ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
   }
 
