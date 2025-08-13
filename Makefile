@@ -7,7 +7,7 @@ endif
 INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui -Ithird_party/rlImGui_git
 
 CURRENT_WORKING_DIR != pwd
-EMSDK_VERSION != cat emsdk_version
+EMSDK_VERSION ?= 4.0.12
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 
 RAYLIB_VERSION_TAG ?= 5.5
@@ -85,6 +85,7 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	@rm -rf third_party/raylib_out
 	@rm -rf third_party/rlImGui_out
 	@rm -rf third_party/imgui_out
+	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
 	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
 	cd third_party/imgui && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	cd third_party/rlImGui_git && git pull
