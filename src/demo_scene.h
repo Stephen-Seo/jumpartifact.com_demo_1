@@ -3,6 +3,8 @@
 
 #include "scene_system.h"
 
+constexpr int DT_ARR_SIZE = 10;
+
 class DemoScene : public Scene {
  public:
   DemoScene();
@@ -12,6 +14,8 @@ class DemoScene : public Scene {
   virtual bool draw(SceneSystem *ctx) override;
 
  private:
+  float dt[DT_ARR_SIZE];
+  int dt_idx;
 };
 
 #endif
