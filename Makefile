@@ -39,7 +39,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 
 third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh third_party/raylib_git/
 	cd third_party/raylib_git && git clean -xfd && git restore . && patch -N -p1 < ${CURRENT_WORKING_DIR}/third_party/raylib_noF12.patch
-	source ${EMSDK_SHELL} >&/dev/null && make PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
+	source ${EMSDK_SHELL} >&/dev/null && ${MAKE} PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
 	install -D -m444 third_party/raylib_git/src/libraylib.a third_party/raylib_out/lib/libraylib.a
 	cd third_party/raylib_git && git clean -xfd && git restore .
 
