@@ -98,6 +98,7 @@ ${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.
 clean:
 	rm -rf dist
 	rm -rf ${OBJDIR}
+	${MAKE} PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src clean || /usr/bin/true
 	rm -rf third_party/raylib_out
 	rm -rf third_party/rlImGui_out
 	rm -rf third_party/imgui_out
