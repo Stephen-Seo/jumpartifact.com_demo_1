@@ -82,7 +82,9 @@ ${OBJDIR}/third_party/imgui_git/%.cpp.o: third_party/imgui_git/%.cpp third_party
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
 
 third_party/emsdk_git/emsdk_env.sh:
-	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
+	test -d ./third_party/emsdk_git || git clone https://github.com/emscripten-core/emsdk.git ./third_party/emsdk_git
+	cd ./third_party/emsdk_git && git pull
+	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 
 ${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a | format
 	@mkdir -p "$(dir $@)"
