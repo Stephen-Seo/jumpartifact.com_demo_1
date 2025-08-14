@@ -98,11 +98,12 @@ clean:
 	rm -rf third_party/rlImGui_out
 	rm -rf third_party/imgui_out
 
-update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a
+update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a third_party/emsdk_git/emsdk_env.sh
 	@rm -rf third_party/raylib_out
 	@rm -rf third_party/rlImGui_out
 	@rm -rf third_party/imgui_out
-	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
+	cd ./third_party/emsdk_git && git pull
+	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
 	cd third_party/imgui_git && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
