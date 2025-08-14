@@ -7,13 +7,17 @@ endif
 INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git
 
 CURRENT_WORKING_DIR != pwd
+EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
 EMSDK_VERSION ?= 4.0.12
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 
+RAYLIB_REPO_PATH ?= https://github.com/raysan5/raylib.git
 RAYLIB_VERSION_TAG ?= 5.5
 
+IMGUI_REPO_PATH ?= https://github.com/ocornut/imgui.git
 IMGUI_VERSION_TAG ?= v1.92.2
 
+RLIMGUI_REPO_PATH ?= https://github.com/raylib-extras/rlImGui.git
 RLIMGUI_COMMIT ?= 4d8a61842903978bc42adf3347cd34f4e6524efc
 
 SOURCES != find src -regex '.*\.cc$$'
@@ -49,12 +53,12 @@ third_party/raylib_out/include/raylib.h third_party/raylib_out/include/raymath.h
 	install -D -m444 third_party/raylib_git/src/rlgl.h third_party/raylib_out/include/rlgl.h
 
 third_party/raylib_git/:
-	test -d ./third_party/raylib_git || git clone --depth 1 --no-single-branch https://github.com/raysan5/raylib.git third_party/raylib_git
+	test -d ./third_party/raylib_git || git clone --depth 1 --no-single-branch ${RAYLIB_REPO_PATH} third_party/raylib_git
 	cd third_party/raylib_git && git fetch && git clean -xfd && git restore . && git checkout ${RAYLIB_VERSION_TAG}
 
 third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/include/raylib.h third_party/imgui_git/
 	@mkdir -p third_party/rlImGui_out
-	test -d third_party/rlImGui_git || git clone https://github.com/raylib-extras/rlImGui.git third_party/rlImGui_git && cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
+	test -d third_party/rlImGui_git || git clone ${RLIMGUI_REPO_PATH} third_party/rlImGui_git && cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
 
 IMGUI_SOURCES := \
@@ -67,7 +71,7 @@ IMGUI_SOURCES := \
 ${IMGUI_SOURCES}: third_party/imgui_git/
 
 third_party/imgui_git/:
-	test -d third_party/imgui_git || git clone https://github.com/ocornut/imgui.git third_party/imgui_git
+	test -d third_party/imgui_git || git clone ${IMGUI_REPO_PATH} third_party/imgui_git
 	cd third_party/imgui_git && git fetch && git checkout ${IMGUI_VERSION_TAG}
 
 IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
@@ -81,7 +85,7 @@ ${OBJDIR}/third_party/imgui_git/%.cpp.o: third_party/imgui_git/%.cpp third_party
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
 
 third_party/emsdk_git/emsdk_env.sh:
-	test -d ./third_party/emsdk_git || git clone https://github.com/emscripten-core/emsdk.git ./third_party/emsdk_git
+	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git
 	cd ./third_party/emsdk_git && git pull
 	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 
@@ -98,14 +102,15 @@ clean:
 	rm -rf third_party/rlImGui_out
 	rm -rf third_party/imgui_out
 
-update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a third_party/emsdk_git/emsdk_env.sh
-	@rm -rf third_party/raylib_out
-	@rm -rf third_party/rlImGui_out
-	@rm -rf third_party/imgui_out
+update:
+	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git
 	cd ./third_party/emsdk_git && git pull
 	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
-	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
+	test -d ./third_party/raylib_git || git clone ${RAYLIB_REPO_PATH} ./third_party/raylib_git
+	cd third_party/raylib_git && git clean -xfd && git restore . && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
+	test -d ./third_party/imgui_git || git clone ${IMGUI_REPO_PATH} ./third_party/imgui_git
 	cd third_party/imgui_git && git fetch && git checkout "${IMGUI_VERSION_TAG}"
+	test -d ./third_party/rlImGui_git || git clone ${RLIMGUI_REPO_PATH} ./third_party/rlImGui_git
 	cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 
 format:
