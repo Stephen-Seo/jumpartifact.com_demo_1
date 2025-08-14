@@ -16,6 +16,14 @@
 
 #include "scene_system.h"
 
+// Local includes.
+#include "demo_scene.h"
+
+// third party includes
+#ifndef NDEBUG
+#include <emscripten/console.h>
+#endif
+
 Scene::Scene(SceneSystem*) {}
 Scene::~Scene() {}
 
@@ -31,6 +39,13 @@ void SceneSystem::update() {
           .count() /
       1000000.0F;
   this->time_point = std::move(next_time_point);
+
+  if (scene_stack.empty() && queued_actions.empty()) {
+#ifndef NDEBUG
+    emscripten_console_warn("Screen Stack is empty, pushing DemoScene...");
+#endif
+    scene_stack.emplace_back(std::make_unique<DemoScene>(this));
+  }
 
   for (auto iter = scene_stack.rbegin(); iter != scene_stack.rend(); ++iter) {
     (*iter)->update(this, delta_time);
