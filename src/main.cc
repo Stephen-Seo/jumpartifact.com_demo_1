@@ -41,6 +41,16 @@ EM_BOOL resize_event_callback(int event_type, const EmscriptenUiEvent *event,
 
 }  // extern "C"
 
+bool handle_fullscreen_event(int type,
+                             const EmscriptenFullscreenChangeEvent *ev,
+                             void *ud) {
+  SceneSystem *ctx = reinterpret_cast<SceneSystem *>(ud);
+
+  ctx->get_flags().set(0, ev->isFullscreen);
+
+  return true;
+}
+
 void ja_demo1_update(void *ud) {
   SceneSystem *scenes = reinterpret_cast<SceneSystem *>(ud);
 
@@ -68,6 +78,9 @@ int main() {
   scenes.push_scene([](SceneSystem *ctx) -> SceneSystem::SceneType {
     return std::make_unique<DemoScene>(ctx);
   });
+
+  emscripten_set_fullscreenchange_callback("canvas", &scenes, true,
+                                           handle_fullscreen_event);
 
   emscripten_set_main_loop_arg(ja_demo1_update, &scenes, 0, 1);
 

@@ -24,10 +24,10 @@
 #include <emscripten/console.h>
 #endif
 
-Scene::Scene(SceneSystem*) {}
+Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
 
-SceneSystem::SceneSystem() : scene_stack(), flags() {}
+SceneSystem::SceneSystem() : scene_stack(), flags(), private_flags() {}
 
 SceneSystem::~SceneSystem() {}
 
@@ -40,6 +40,8 @@ void SceneSystem::update() {
       1000000.0F;
   this->time_point = std::move(next_time_point);
 
+  handle_actions();
+
   if (scene_stack.empty() && queued_actions.empty()) {
 #ifndef NDEBUG
     emscripten_console_warn("Screen Stack is empty, pushing DemoScene...");
@@ -50,8 +52,6 @@ void SceneSystem::update() {
   for (auto iter = scene_stack.rbegin(); iter != scene_stack.rend(); ++iter) {
     (*iter)->update(this, delta_time);
   }
-
-  handle_actions();
 }
 
 void SceneSystem::draw() {
@@ -72,10 +72,14 @@ void SceneSystem::push_scene(SceneFnType scene_builder) {
 
 void SceneSystem::pop_scene() {
   queued_actions.emplace_back(ActionType::POP, std::nullopt);
-  flags.set(0);
+  private_flags.set(0);
 }
 
-bool SceneSystem::pop_was_queued() const { return flags.test(0); }
+bool SceneSystem::pop_was_queued() const { return private_flags.test(0); }
+
+SceneSystem::FlagsType &SceneSystem::get_flags() { return flags; }
+
+const SceneSystem::FlagsType &SceneSystem::get_flags() const { return flags; }
 
 void SceneSystem::handle_actions() {
   while (!queued_actions.empty()) {
@@ -97,5 +101,5 @@ void SceneSystem::handle_actions() {
     }
     queued_actions.pop_front();
   }
-  flags.reset(0);
+  private_flags.reset(0);
 }

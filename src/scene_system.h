@@ -45,6 +45,8 @@ class SceneSystem {
   using SceneFnType = std::function<SceneType(SceneSystem*)>;
   using OptBuilderType = std::optional<SceneFnType>;
 
+  using FlagsType = std::bitset<32>;
+
   SceneSystem();
   ~SceneSystem();
 
@@ -65,6 +67,9 @@ class SceneSystem {
 
   bool pop_was_queued() const;
 
+  FlagsType& get_flags();
+  const FlagsType& get_flags() const;
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -75,8 +80,10 @@ class SceneSystem {
   std::chrono::time_point<std::chrono::steady_clock> time_point;
   std::deque<SceneType> scene_stack;
   std::deque<Action> queued_actions;
-  // 0 - pop was queued, remains true until pop occurs.
-  std::bitset<32> flags;
+  // 0 - is fullscreen
+  FlagsType flags;
+  // 0 - pop was queued, remains true until pop occurs
+  std::bitset<32> private_flags;
 
   void handle_actions();
 };

@@ -17,9 +17,13 @@
 #include "demo_scene.h"
 
 // third-party includes
+#include <emscripten/html5.h>
 #include <imgui.h>
 #include <raylib.h>
 #include <rlImGui.h>
+
+// standard library includes
+#include <print>
 
 DemoScene::DemoScene(SceneSystem *ctx) : Scene(ctx), flags{}, dt_idx(0) {
   for (int idx = 0; idx < dt.size(); ++idx) {
@@ -52,17 +56,37 @@ bool DemoScene::draw(SceneSystem *ctx) {
   if (ImGui::Begin("Config Window")) {
     if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None)) {
       if (ImGui::BeginTabItem("Settings")) {
-        if (ImGui::Button(flags.test(0) ? "Toggle Font Size Bigger"
-                                        : "Toggle Font Size Smaller")) {
+        bool is_fullscreen = ctx->get_flags().test(0);
+        ImGui::Checkbox("Fullscreen Enabled", &is_fullscreen);
+        if (is_fullscreen != ctx->get_flags().test(0)) {
+          if (is_fullscreen) {
+            if (emscripten_request_fullscreen("canvas", true) !=
+                EMSCRIPTEN_RESULT_SUCCESS) {
+              is_fullscreen = false;
+            }
+          } else {
+            if (emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS) {
+              is_fullscreen = true;
+            }
+          }
+        }
+        ctx->get_flags().set(0, is_fullscreen);
+
+        bool is_font_big = !flags.test(0);
+        ImGui::Checkbox("Font Size Big", &is_font_big);
+        if (is_font_big == flags.test(0)) {
           flags.set(1);
         }
-        if (ImGui::Button(flags.test(2) ? "Close Demo Window"
-                                        : "Open Demo Window")) {
+
+        bool is_demo_window_open = flags.test(2);
+        ImGui::Checkbox("Demo Window Active", &is_demo_window_open);
+        if (is_demo_window_open != flags.test(2)) {
           flags.flip(2);
         }
 
         if (ImGui::Button("Reset")) {
           ctx->clear_scenes();
+          std::println(stdout, "Reset Scenes.");
         }
 
         float avg = 0.0F;
