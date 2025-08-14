@@ -69,7 +69,7 @@ ${IMGUI_SOURCES}: third_party/imgui_git/
 
 third_party/imgui_git/:
 	test -d third_party/imgui_git || git clone https://github.com/ocornut/imgui.git third_party/imgui_git
-	cd third_party/imgui_git && git checkout ${IMGUI_VERSION_TAG}
+	cd third_party/imgui_git && git fetch && git checkout ${IMGUI_VERSION_TAG}
 
 IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
 
