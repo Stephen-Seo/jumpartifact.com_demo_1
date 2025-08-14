@@ -1,0 +1,14 @@
+Do not allow F12 usage (screeenshot) as that is used in the browser for
+debugging purposes.
+
+--- a/src/config.h
++++ b/src/config.h
+@@ -59,7 +59,7 @@
+ // Use a partial-busy wait loop, in this case frame sleeps for most of the time, but then runs a busy loop at the end for accuracy
+ #define SUPPORT_PARTIALBUSY_WAIT_LOOP    1
+ // Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
+-#define SUPPORT_SCREEN_CAPTURE          1
++//#define SUPPORT_SCREEN_CAPTURE          1
+ // Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
+ #define SUPPORT_GIF_RECORDING           1
+ // Support CompressData() and DecompressData() functions

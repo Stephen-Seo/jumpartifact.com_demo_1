@@ -4,7 +4,7 @@ else
 	COMMON_FLAGS := -sASSERTIONS
 endif
 
-INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui -Ithird_party/rlImGui_git
+INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git
 
 CURRENT_WORKING_DIR != pwd
 EMSDK_VERSION ?= 4.0.12
@@ -38,38 +38,53 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		${OBJECTS}
 	ln -sf ja_demo1.html dist/index.html
 
-third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh
-	/usr/bin/env EMSDK_ENV_SCRIPT="${EMSDK_SHELL}" ./third_party/wasm_make_raylib.sh -o ./third_party/raylib_out -c ./third_party/raylib_git
+third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh third_party/raylib_git/
+	cd third_party/raylib_git && git clean -xfd && git restore . && patch -N -p1 < ${CURRENT_WORKING_DIR}/third_party/raylib_noF12.patch
+	source ${EMSDK_SHELL} >&/dev/null && make PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
+	install -D -m444 third_party/raylib_git/src/libraylib.a third_party/raylib_out/lib/libraylib.a
+	cd third_party/raylib_git && git clean -xfd && git restore .
 
-third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/lib/libraylib.a third_party/imgui/
+third_party/raylib_out/include/raylib.h third_party/raylib_out/include/raymath.h third_party/raylib_out/include/rlgl.h: third_party/raylib_git/
+	install -D -m444 third_party/raylib_git/src/raylib.h third_party/raylib_out/include/raylib.h
+	install -D -m444 third_party/raylib_git/src/raymath.h third_party/raylib_out/include/raymath.h
+	install -D -m444 third_party/raylib_git/src/rlgl.h third_party/raylib_out/include/rlgl.h
+
+third_party/raylib_git/:
+	test -d ./third_party/raylib_git || git clone --depth 1 --no-single-branch https://github.com/raysan5/raylib.git third_party/raylib_git
+	cd third_party/raylib_git && git fetch && git clean -xfd && git restore . && git checkout ${RAYLIB_VERSION_TAG}
+
+third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/include/raylib.h third_party/imgui_git/
 	@mkdir -p third_party/rlImGui_out
 	test -d third_party/rlImGui_git || git clone https://github.com/raylib-extras/rlImGui.git third_party/rlImGui_git && cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
 
-third_party/imgui/:
-	test -d third_party/imgui || git clone https://github.com/ocornut/imgui.git third_party/imgui
-	cd third_party/imgui && git checkout ${IMGUI_VERSION_TAG}
-
 IMGUI_SOURCES := \
-	third_party/imgui/imgui.cpp \
-	third_party/imgui/imgui_demo.cpp \
-	third_party/imgui/imgui_draw.cpp \
-	third_party/imgui/imgui_tables.cpp \
-	third_party/imgui/imgui_widgets.cpp
+	third_party/imgui_git/imgui.cpp \
+	third_party/imgui_git/imgui_demo.cpp \
+	third_party/imgui_git/imgui_draw.cpp \
+	third_party/imgui_git/imgui_tables.cpp \
+	third_party/imgui_git/imgui_widgets.cpp
+
+${IMGUI_SOURCES}: third_party/imgui_git/
+
+third_party/imgui_git/:
+	test -d third_party/imgui_git || git clone https://github.com/ocornut/imgui.git third_party/imgui_git
+	cd third_party/imgui_git && git checkout ${IMGUI_VERSION_TAG}
+
 IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
 
-third_party/imgui_out/libimgui.a: third_party/imgui/ third_party/emsdk_git/emsdk_env.sh ${IMGUI_OBJECTS}
+third_party/imgui_out/libimgui.a: third_party/imgui_git/ third_party/emsdk_git/emsdk_env.sh ${IMGUI_OBJECTS}
 	@mkdir -p third_party/imgui_out
 	source ${EMSDK_SHELL} >&/dev/null && emar rcs third_party/imgui_out/libimgui.a ${IMGUI_OBJECTS}
 
-${OBJDIR}/third_party/imgui/%.cpp.o: third_party/imgui/%.cpp third_party/emsdk_git/emsdk_env.sh
-	@mkdir -p ${OBJDIR}/third_party/imgui
+${OBJDIR}/third_party/imgui_git/%.cpp.o: third_party/imgui_git/%.cpp third_party/imgui_git/ third_party/emsdk_git/emsdk_env.sh
+	@mkdir -p ${OBJDIR}/third_party/imgui_git
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
 
 third_party/emsdk_git/emsdk_env.sh:
 	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
 
-${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a | format
+${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a | format
 	@mkdir -p "$(dir $@)"
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
@@ -88,7 +103,7 @@ update: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.c
 	@rm -rf third_party/imgui_out
 	/usr/bin/env EMSDK_CLONE_DIR=./third_party/emsdk_git EMSDK_TAG_VERSION="${EMSDK_VERSION}" ./third_party/setup_emsdk.sh
 	cd third_party/raylib_git && git fetch && git checkout "${RAYLIB_VERSION_TAG}"
-	cd third_party/imgui && git fetch && git checkout "${IMGUI_VERSION_TAG}"
+	cd third_party/imgui_git && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
 
 format:
