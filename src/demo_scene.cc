@@ -25,6 +25,8 @@ DemoScene::DemoScene(SceneSystem *ctx) : Scene(ctx), flags{}, dt_idx(0) {
   for (int idx = 0; idx < dt.size(); ++idx) {
     dt[idx] = 1.0F;
   }
+  // demo window open
+  flags.set(2);
 }
 DemoScene::~DemoScene() {}
 
@@ -43,29 +45,44 @@ bool DemoScene::draw(SceneSystem *ctx) {
     ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
   }
 
-  bool open = true;
-  ImGui::ShowDemoWindow(&open);
+  if (flags.test(2)) {
+    ImGui::ShowDemoWindow();
+  }
 
-  open = true;
-  if (ImGui::Begin("Test Window", &open)) {
-    if (ImGui::Button("Toggle Font Size")) {
-      flags.set(1);
-    }
+  if (ImGui::Begin("Config Window")) {
+    if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None)) {
+      if (ImGui::BeginTabItem("Settings")) {
+        if (ImGui::Button(flags.test(0) ? "Toggle Font Size Bigger"
+                                        : "Toggle Font Size Smaller")) {
+          flags.set(1);
+        }
+        if (ImGui::Button(flags.test(2) ? "Close Demo Window"
+                                        : "Open Demo Window")) {
+          flags.flip(2);
+        }
 
-    float avg = 0.0F;
-    for (int idx = 0; idx < dt.size(); ++idx) {
-      avg += dt[idx];
+        if (ImGui::Button("Reset")) {
+          ctx->clear_scenes();
+        }
+
+        float avg = 0.0F;
+        for (int idx = 0; idx < dt.size(); ++idx) {
+          avg += dt[idx];
+        }
+        avg /= static_cast<float>(dt.size());
+        ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
+
+        ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
     }
-    avg /= static_cast<float>(dt.size());
-    ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
+    ImGui::End();
   }
 
   // Cleanup of doubling the font size.
   if (!flags.test(0)) {
     ImGui::PopFont();
   }
-
-  ImGui::End();
 
   rlImGuiEnd();
 

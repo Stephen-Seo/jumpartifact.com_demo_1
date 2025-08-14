@@ -36,6 +36,7 @@ class DemoScene : public Scene {
  private:
   // 0 - double font size disabled
   // 1 - queued toggle flag 0
+  // 2 - demo window open
   std::bitset<32> flags;
   std::array<float, DT_ARR_SIZE> dt;
   int dt_idx;
