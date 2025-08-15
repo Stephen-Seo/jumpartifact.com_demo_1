@@ -53,55 +53,53 @@ bool DemoScene::draw(SceneSystem *ctx) {
     ImGui::ShowDemoWindow();
   }
 
-  if (ImGui::Begin("Config Window")) {
-    if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None)) {
-      if (ImGui::BeginTabItem("Settings")) {
-        bool is_fullscreen = ctx->get_flags().test(0);
-        ImGui::Checkbox("Fullscreen Enabled", &is_fullscreen);
-        if (is_fullscreen != ctx->get_flags().test(0)) {
-          if (is_fullscreen) {
-            if (emscripten_request_fullscreen("canvas", true) !=
-                EMSCRIPTEN_RESULT_SUCCESS) {
-              is_fullscreen = false;
-            }
-          } else {
-            if (emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS) {
-              is_fullscreen = true;
-            }
-          }
+  ImGui::Begin("Config Window");
+  ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None);
+  if (ImGui::BeginTabItem("Settings")) {
+    bool is_fullscreen = ctx->get_flags().test(0);
+    ImGui::Checkbox("Fullscreen Enabled", &is_fullscreen);
+    if (is_fullscreen != ctx->get_flags().test(0)) {
+      if (is_fullscreen) {
+        if (emscripten_request_fullscreen("canvas", true) !=
+            EMSCRIPTEN_RESULT_SUCCESS) {
+          is_fullscreen = false;
         }
-        ctx->get_flags().set(0, is_fullscreen);
-
-        bool is_font_big = !flags.test(0);
-        ImGui::Checkbox("Font Size Big", &is_font_big);
-        if (is_font_big == flags.test(0)) {
-          flags.set(1);
+      } else {
+        if (emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS) {
+          is_fullscreen = true;
         }
-
-        bool is_demo_window_open = flags.test(2);
-        ImGui::Checkbox("Demo Window Active", &is_demo_window_open);
-        if (is_demo_window_open != flags.test(2)) {
-          flags.flip(2);
-        }
-
-        if (ImGui::Button("Reset")) {
-          ctx->clear_scenes();
-          std::println(stdout, "Reset Scenes.");
-        }
-
-        float avg = 0.0F;
-        for (int idx = 0; idx < dt.size(); ++idx) {
-          avg += dt[idx];
-        }
-        avg /= static_cast<float>(dt.size());
-        ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
-
-        ImGui::EndTabItem();
       }
-      ImGui::EndTabBar();
     }
-    ImGui::End();
+    ctx->get_flags().set(0, is_fullscreen);
+
+    bool is_font_big = !flags.test(0);
+    ImGui::Checkbox("Font Size Big", &is_font_big);
+    if (is_font_big == flags.test(0)) {
+      flags.set(1);
+    }
+
+    bool is_demo_window_open = flags.test(2);
+    ImGui::Checkbox("Demo Window Active", &is_demo_window_open);
+    if (is_demo_window_open != flags.test(2)) {
+      flags.flip(2);
+    }
+
+    if (ImGui::Button("Reset")) {
+      ctx->clear_scenes();
+      std::println(stdout, "Reset Scenes.");
+    }
+
+    float avg = 0.0F;
+    for (int idx = 0; idx < dt.size(); ++idx) {
+      avg += dt[idx];
+    }
+    avg /= static_cast<float>(dt.size());
+    ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
+
+    ImGui::EndTabItem();
   }
+  ImGui::EndTabBar();
+  ImGui::End();
 
   // Cleanup of doubling the font size.
   if (!flags.test(0)) {
