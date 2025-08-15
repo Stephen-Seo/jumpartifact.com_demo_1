@@ -91,7 +91,7 @@ third_party/emsdk_git/emsdk_env.sh:
 	cd ./third_party/emsdk_git && git pull
 	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 
-${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git/ third_party/imgui_git/ | format
+${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git/ third_party/imgui_git/ third_party/emsdk_git/emsdk_env.sh | format
 	@mkdir -p "$(dir $@)"
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
