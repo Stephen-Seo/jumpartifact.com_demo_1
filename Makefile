@@ -56,9 +56,11 @@ third_party/raylib_git/:
 	test -d ./third_party/raylib_git || git clone --depth 1 --no-single-branch ${RAYLIB_REPO_PATH} third_party/raylib_git
 	cd third_party/raylib_git && git fetch && git clean -xfd && git restore . && git checkout ${RAYLIB_VERSION_TAG}
 
-third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/include/raylib.h third_party/imgui_git/
-	@mkdir -p third_party/rlImGui_out
+third_party/rlImGui_git/:
 	test -d third_party/rlImGui_git || git clone ${RLIMGUI_REPO_PATH} third_party/rlImGui_git && cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
+
+third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/include/raylib.h third_party/imgui_git/ third_party/rlImGui_git/
+	@mkdir -p third_party/rlImGui_out
 	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
 
 IMGUI_SOURCES := \
@@ -89,7 +91,7 @@ third_party/emsdk_git/emsdk_env.sh:
 	cd ./third_party/emsdk_git && git pull
 	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 
-${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a | format
+${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git/ third_party/imgui_git/ | format
 	@mkdir -p "$(dir $@)"
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
