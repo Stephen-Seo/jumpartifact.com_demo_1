@@ -27,6 +27,7 @@ extern "C" {
 // standard library includes
 #include <cstdio>
 #include <cstring>
+#include <fstream>
 
 TestLuaScene::TestLuaScene(SceneSystem *ctx)
     : Scene(ctx),
@@ -35,6 +36,7 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
       lua_ctx(luaL_newstate()),
       exec_state(ExecState::PENDING) {
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
+  std::strcpy(filename.data(), "/test.lua");
 
   luaL_requiref(lua_ctx, LUA_GNAME, luaopen_base, 1);           // +1
   lua_pop(lua_ctx, 1);                                          // -1
@@ -52,18 +54,20 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   lua_pop(lua_ctx, 1);                                          // -1
 
   // Put "assets_embed/?/init.lua" to "package.path"
-  lua_getglobal(lua_ctx, "package");                                      // +1
-  lua_pushstring(lua_ctx, "path");                                        // +1
-  lua_pushstring(lua_ctx, "assets_embed/?/init.lua;assets_embed/?.lua");  // +1
-  lua_settable(lua_ctx, -3);                                              // -2
-  lua_pop(lua_ctx, 1);                                                    // -1
+  lua_getglobal(lua_ctx, "package");  // +1
+  lua_pushstring(lua_ctx, "path");    // +1
+  lua_pushstring(
+      lua_ctx,
+      "/?/init.lua;/?.lua;assets_embed/?/init.lua;assets_embed/?.lua");  // +1
+  lua_settable(lua_ctx, -3);                                             // -2
+  lua_pop(lua_ctx, 1);                                                   // -1
 
-  // Put "assets_embed/?.so" to "package.cpath"
-  lua_getglobal(lua_ctx, "package");             // +1
-  lua_pushstring(lua_ctx, "cpath");              // +1
-  lua_pushstring(lua_ctx, "assets_embed/?.so");  // +1
-  lua_settable(lua_ctx, -3);                     // -2
-  lua_pop(lua_ctx, 1);                           // -1
+  //// Put "assets_embed/?.so" to "package.cpath"
+  // lua_getglobal(lua_ctx, "package");             // +1
+  // lua_pushstring(lua_ctx, "cpath");              // +1
+  // lua_pushstring(lua_ctx, "assets_embed/?.so");  // +1
+  // lua_settable(lua_ctx, -3);                     // -2
+  // lua_pop(lua_ctx, 1);                           // -1
 }
 
 TestLuaScene::~TestLuaScene() { lua_close(lua_ctx); }
@@ -92,6 +96,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     } else {
       exec_state = ExecState::SUCCESS;
     }
+    save_error_text.clear();
   }
   switch (exec_state) {
     case ExecState::PENDING:
@@ -103,6 +108,19 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       ImGui::Text("Script run failure! %s", error_text.c_str());
       break;
   }
+  ImGui::InputText("Filename (tmp storage)", filename.data(), filename.size());
+  if (ImGui::Button("Save")) {
+    std::ofstream ofs = std::ofstream(
+        filename.data(), std::ios_base::out | std::ios_base::trunc);
+    ofs << buf.data();
+    if (ofs.good()) {
+      save_error_text = std::string("Successfully Saved!");
+    } else {
+      save_error_text = std::string("Failed to Save!");
+    }
+    exec_state = ExecState::PENDING;
+  }
+  ImGui::Text("Save Status: %s", save_error_text.c_str());
   ImGui::End();  // Test Lua
 }
 
