@@ -24,11 +24,6 @@ LUA_VERSION ?= 5.4.8
 LUA_DL_LINK ?= https://lua.org/ftp/lua-${LUA_VERSION}.tar.gz
 LUA_TAR_SHA256SUM ?= 4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae
 
-MOONSCRIPT_VERSION_TAG ?= v0.5.0
-MOONSCRIPT_VER_NUM := $(subst v0,0,${MOONSCRIPT_VERSION_TAG})
-MOONSCRIPT_DL_LINK ?= https://github.com/leafo/moonscript/archive/refs/tags/${MOONSCRIPT_VERSION_TAG}.tar.gz
-MOONSCRIPT_TAR_SHA256SUM ?= 1adb5bb38f9c6f306250f6e90d92796fe100408ee062ac0d14f3c4c22c92e682
-
 SOURCES != find src -regex '.*\.cc$$'
 HEADERS != find src -regex '.*\.h$$'
 
@@ -37,7 +32,7 @@ OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
 
 all: dist/index.html
 
-dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a assets_embed/moonscript
+dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a
 	@mkdir -p dist
 	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
@@ -45,7 +40,6 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		-Lthird_party/imgui_out -limgui \
 		third_party/rlImGui_out/rlImGui.cpp.o \
 		-Lthird_party/lua_out/lib -llua \
-		--embed-file assets_embed \
 		--shell-file custom_shell.html \
 		-sEXPORTED_FUNCTIONS=_main \
 		${COMMON_FLAGS} \
@@ -126,17 +120,6 @@ third_party/lua_out/lib/liblua.a: third_party/lua-${LUA_VERSION}
 		&& ${MAKE} EMSDK_SHELL=${EMSDK_SHELL} -C src \
 		&& install -D -m644 src/liblua.a ${CURRENT_WORKING_DIR}/third_party/lua_out/lib/liblua.a
 
-third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz:
-	curl -L -o third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz ${MOONSCRIPT_DL_LINK}
-	sha256sum third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz | grep ${MOONSCRIPT_TAR_SHA256SUM}
-
-assets_embed/moonscript: third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz
-	@mkdir -p assets_embed
-	mkdir -p /tmp/${USER}_JADEMO1_TEMP/
-	cd /tmp/${USER}_JADEMO1_TEMP && tar -xf ${CURRENT_WORKING_DIR}/third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz moonscript-${MOONSCRIPT_VER_NUM}/moonscript
-	cp -r /tmp/${USER}_JADEMO1_TEMP/moonscript-${MOONSCRIPT_VER_NUM}/moonscript ./assets_embed/
-	rm -rf /tmp/${USER}_JADEMO1_TEMP/
-
 .PHONY: clean update format
 
 clean:
@@ -148,7 +131,6 @@ clean:
 	rm -rf third_party/imgui_out
 	rm -rf third_party/lua_out
 	rm -rf third_party/lua-${LUA_VERSION}
-	rm -rf assets_embed/moonscript
 
 update:
 	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git

@@ -28,6 +28,9 @@
 // standard library includes
 #include <print>
 
+// local includes
+#include "test_lua_scene.h"
+
 Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
 
@@ -119,9 +122,15 @@ void SceneSystem::draw() {
       private_flags.flip(3);
     }
 
-    if (ImGui::Button("Reset")) {
+    if (ImGui::Button("Clear Scenes")) {
       clear_scenes();
-      std::println(stdout, "Reset Scenes.");
+      std::println(stdout, "Cleared Scenes.");
+    }
+
+    if (ImGui::Button("Push \"Lua Test\" Screen")) {
+      clear_scenes();
+      push_scene(
+          [](SceneSystem *ctx) { return std::make_unique<TestLuaScene>(ctx); });
     }
 
     float avg = 0.0F;
