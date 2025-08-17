@@ -113,8 +113,9 @@ third_party/lua-${LUA_VERSION}.tar.gz:
 third_party/lua-${LUA_VERSION}: third_party/lua-${LUA_VERSION}.tar.gz
 	cd third_party && tar -xf lua-${LUA_VERSION}.tar.gz && touch lua-${LUA_VERSION}
 
-third_party/lua_out/include/lua.h third_party/lua_out/include/lauxlib.h: third_party/lua-${LUA_VERSION}
+third_party/lua_out/include/lua.h third_party/lua_out/include/lualib.h third_party/lua_out/include/luaconf.h third_party/lua_out/include/lauxlib.h: third_party/lua-${LUA_VERSION}
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/lua.h third_party/lua_out/include/lua.h
+	install -D -m644 third_party/lua-${LUA_VERSION}/src/lualib.h third_party/lua_out/include/lualib.h
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/luaconf.h third_party/lua_out/include/luaconf.h
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/lauxlib.h third_party/lua_out/include/lauxlib.h
 
