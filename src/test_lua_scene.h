@@ -28,6 +28,7 @@ extern "C" {
 }
 
 constexpr int TEXT_BUF_SIZE = 65536;
+constexpr int FILENAME_BUF_SIZE = 1024;
 
 const static char *LUA_DEFAULT_TEXT =
     "-- Input Lua code here.\n"
@@ -48,7 +49,9 @@ class TestLuaScene : public Scene {
   enum class ExecState { PENDING, SUCCESS, FAILURE };
 
   std::array<char, TEXT_BUF_SIZE> buf;
+  std::array<char, FILENAME_BUF_SIZE> filename;
   std::string error_text;
+  std::string save_error_text;
   lua_State *lua_ctx;
   ExecState exec_state;
 };
