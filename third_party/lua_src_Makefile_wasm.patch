@@ -1,0 +1,24 @@
+Patch lua/src/Makefile to build for emscripten.
+
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -4,15 +4,15 @@
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+ 
+ # Your platform. See PLATS for possible values.
+-PLAT= guess
++PLAT= generic
+ 
+-CC= gcc -std=gnu99
++CC= source ${EMSDK_SHELL} >&/dev/null && emcc -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+-AR= ar rcu
+-RANLIB= ranlib
++AR= source ${EMSDK_SHELL} >&/dev/null && emar rcu
++RANLIB= source ${EMSDK_SHELL} >&/dev/null && emranlib
+ RM= rm -f
+ UNAME= uname
+ 
