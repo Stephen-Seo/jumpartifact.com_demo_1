@@ -54,16 +54,16 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   // Put "assets_embed/?/init.lua" to "package.path"
   lua_getglobal(lua_ctx, "package");                                      // +1
   lua_pushstring(lua_ctx, "path");                                        // +1
-  lua_pushstring(lua_ctx, "assets_embed/?/init.lua;assets_embed/?.lua");  // +1
+  lua_pushstring(lua_ctx, "/?/init.lua;/?.lua;assets_embed/?/init.lua;assets_embed/?.lua");  // +1
   lua_settable(lua_ctx, -3);                                              // -2
   lua_pop(lua_ctx, 1);                                                    // -1
 
-  // Put "assets_embed/?.so" to "package.cpath"
-  lua_getglobal(lua_ctx, "package");             // +1
-  lua_pushstring(lua_ctx, "cpath");              // +1
-  lua_pushstring(lua_ctx, "assets_embed/?.so");  // +1
-  lua_settable(lua_ctx, -3);                     // -2
-  lua_pop(lua_ctx, 1);                           // -1
+  //// Put "assets_embed/?.so" to "package.cpath"
+  //lua_getglobal(lua_ctx, "package");             // +1
+  //lua_pushstring(lua_ctx, "cpath");              // +1
+  //lua_pushstring(lua_ctx, "assets_embed/?.so");  // +1
+  //lua_settable(lua_ctx, -3);                     // -2
+  //lua_pop(lua_ctx, 1);                           // -1
 }
 
 TestLuaScene::~TestLuaScene() { lua_close(lua_ctx); }
