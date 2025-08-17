@@ -16,18 +16,27 @@
 
 #include "scene_system.h"
 
-// Local includes.
-#include "demo_scene.h"
-
 // third party includes
 #ifndef NDEBUG
 #include <emscripten/console.h>
 #endif
+#include <emscripten/html5.h>
+#include <imgui.h>
+#include <raylib.h>
+#include <rlImGui.h>
+
+// standard library includes
+#include <print>
 
 Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
 
-SceneSystem::SceneSystem() : scene_stack(), flags(), private_flags() {}
+SceneSystem::SceneSystem()
+    : scene_stack(),
+      dt{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F},
+      dt_idx(0),
+      flags(),
+      private_flags() {}
 
 SceneSystem::~SceneSystem() {}
 
@@ -40,14 +49,12 @@ void SceneSystem::update() {
       1000000.0F;
   this->time_point = std::move(next_time_point);
 
-  handle_actions();
-
-  if (scene_stack.empty() && queued_actions.empty()) {
-#ifndef NDEBUG
-    emscripten_console_warn("Screen Stack is empty, pushing DemoScene...");
-#endif
-    scene_stack.emplace_back(std::make_unique<DemoScene>(this));
+  dt[dt_idx++] = delta_time;
+  if (dt_idx >= dt.size()) {
+    dt_idx = 0;
   }
+
+  handle_actions();
 
   for (auto iter = scene_stack.rbegin(); iter != scene_stack.rend(); ++iter) {
     (*iter)->update(this, delta_time);
@@ -55,10 +62,91 @@ void SceneSystem::update() {
 }
 
 void SceneSystem::draw() {
-  for (auto iter = scene_stack.rbegin(); iter != scene_stack.rend(); ++iter) {
-    if ((*iter)->draw(this)) {
-      break;
+  size_t disallow_below_idx = 0;
+  for (size_t idx = 0; idx < scene_stack.size(); ++idx) {
+    if (!scene_stack[idx]->allow_draw_below(this)) {
+      disallow_below_idx = idx;
     }
+  }
+
+  for (size_t idx = scene_stack.size(); idx-- > disallow_below_idx;) {
+    scene_stack[idx]->draw(this);
+  }
+
+  rlImGuiBegin();
+
+  // Font size doubling.
+  if (!private_flags.test(1)) {
+    ImGui::PushFont(NULL, ImGui::GetFontSize() * 2.0F);
+  }
+
+  for (size_t idx = scene_stack.size(); idx-- > disallow_below_idx;) {
+    scene_stack[idx]->draw_rlimgui(this);
+  }
+
+  if (private_flags.test(3)) {
+    ImGui::ShowDemoWindow();
+  }
+
+  ImGui::Begin("Config Window");
+  ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None);
+  if (ImGui::BeginTabItem("Settings")) {
+    bool is_fullscreen = flags.test(0);
+    ImGui::Checkbox("Fullscreen Enabled", &is_fullscreen);
+    if (is_fullscreen != flags.test(0)) {
+      if (is_fullscreen) {
+        if (emscripten_request_fullscreen("canvas", true) !=
+            EMSCRIPTEN_RESULT_SUCCESS) {
+          is_fullscreen = false;
+        }
+      } else {
+        if (emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS) {
+          is_fullscreen = true;
+        }
+      }
+    }
+    flags.set(0, is_fullscreen);
+
+    bool is_font_big = !private_flags.test(1);
+    ImGui::Checkbox("Font Size Big", &is_font_big);
+    if (is_font_big == private_flags.test(1)) {
+      private_flags.set(2);
+    }
+
+    bool is_demo_window_open = private_flags.test(3);
+    ImGui::Checkbox("Demo Window Active", &is_demo_window_open);
+    if (is_demo_window_open != private_flags.test(3)) {
+      private_flags.flip(3);
+    }
+
+    if (ImGui::Button("Reset")) {
+      clear_scenes();
+      std::println(stdout, "Reset Scenes.");
+    }
+
+    float avg = 0.0F;
+    for (int idx = 0; idx < dt.size(); ++idx) {
+      avg += dt[idx];
+    }
+    avg /= static_cast<float>(dt.size());
+    ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
+
+    ImGui::EndTabItem();
+  }
+  ImGui::EndTabBar();
+  ImGui::End();
+
+  // Font size doubling cleanup.
+  if (!private_flags.test(1)) {
+    ImGui::PopFont();
+  }
+
+  rlImGuiEnd();
+
+  // Toggle doubling of font size.
+  if (private_flags.test(2)) {
+    private_flags.reset(2);
+    private_flags.flip(1);
   }
 }
 

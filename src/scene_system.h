@@ -33,8 +33,11 @@ class Scene {
   virtual ~Scene();
 
   virtual void update(SceneSystem* ctx, float dt) = 0;
-  // Return true to DISALLOW drawing next scene.
-  virtual bool draw(SceneSystem* ctx) = 0;
+  virtual void draw(SceneSystem* ctx) = 0;
+  virtual void draw_rlimgui(SceneSystem* ctx) = 0;
+
+  // Return true to ALLOW drawing lower scenes on stack.
+  virtual bool allow_draw_below(SceneSystem* ctx) = 0;
 
  private:
 };
@@ -80,9 +83,14 @@ class SceneSystem {
   std::chrono::time_point<std::chrono::steady_clock> time_point;
   std::deque<SceneType> scene_stack;
   std::deque<Action> queued_actions;
+  std::array<float, 10> dt;
+  size_t dt_idx;
   // 0 - is fullscreen
   FlagsType flags;
   // 0 - pop was queued, remains true until pop occurs
+  // 1 - small font size
+  // 2 - toggle font size
+  // 3 - demo window open
   std::bitset<32> private_flags;
 
   void handle_actions();
