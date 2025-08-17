@@ -21,7 +21,6 @@
 #include <rlImGui.h>
 
 // Local includes
-#include "demo_scene.h"
 #include "scene_system.h"
 
 EM_JS(int, canvas_get_width, (),
@@ -75,9 +74,6 @@ int main() {
                                  resize_event_callback);
 
   SceneSystem scenes{};
-  scenes.push_scene([](SceneSystem *ctx) -> SceneSystem::SceneType {
-    return std::make_unique<DemoScene>(ctx);
-  });
 
   emscripten_set_fullscreenchange_callback("canvas", &scenes, true,
                                            handle_fullscreen_event);

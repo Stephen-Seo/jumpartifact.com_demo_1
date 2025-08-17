@@ -14,32 +14,43 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#ifndef SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_DEMO_SCENE_H_
-#define SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_DEMO_SCENE_H_
+#ifndef SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_TEST_LUA_SCENE_H_
+#define SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_TEST_LUA_SCENE_H_
 
 #include "scene_system.h"
 
 // standard library includes
-#include <array>
-#include <bitset>
+#include <string>
 
-constexpr int DT_ARR_SIZE = 10;
+// third party includes
+extern "C" {
+#include "lua.h"
+}
 
-class DemoScene : public Scene {
+constexpr int TEXT_BUF_SIZE = 65536;
+
+const static char *LUA_DEFAULT_TEXT =
+    "-- Input Lua code here.\n"
+    "-- basic, coroutine, package, string manip., utf-8, table manip., and "
+    "math modules are available\n";
+
+class TestLuaScene : public Scene {
  public:
-  DemoScene(SceneSystem *);
-  virtual ~DemoScene() override;
+  TestLuaScene(SceneSystem *ctx);
+  virtual ~TestLuaScene() override;
 
   virtual void update(SceneSystem *ctx, float dt) override;
-  virtual bool draw(SceneSystem *ctx) override;
+  virtual void draw(SceneSystem *ctx) override;
+  virtual void draw_rlimgui(SceneSystem *ctx) override;
+  virtual bool allow_draw_below(SceneSystem *ctx) override;
 
  private:
-  // 0 - double font size disabled
-  // 1 - queued toggle flag 0
-  // 2 - demo window open
-  std::bitset<32> flags;
-  std::array<float, DT_ARR_SIZE> dt;
-  int dt_idx;
+  enum class ExecState { PENDING, SUCCESS, FAILURE };
+
+  std::array<char, TEXT_BUF_SIZE> buf;
+  std::string error_text;
+  lua_State *lua_ctx;
+  ExecState exec_state;
 };
 
 #endif
