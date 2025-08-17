@@ -111,7 +111,7 @@ third_party/lua-${LUA_VERSION}.tar.gz:
 	sha256sum third_party/lua-${LUA_VERSION}.tar.gz | grep ${LUA_TAR_SHA256SUM}
 
 third_party/lua-${LUA_VERSION}: third_party/lua-${LUA_VERSION}.tar.gz
-	cd third_party && tar -xf lua-${LUA_VERSION}.tar.gz
+	cd third_party && tar -xf lua-${LUA_VERSION}.tar.gz && touch lua-${LUA_VERSION}
 
 third_party/lua_out/include/lua.h third_party/lua_out/include/lauxlib.h: third_party/lua-${LUA_VERSION}
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/lua.h third_party/lua_out/include/lua.h
