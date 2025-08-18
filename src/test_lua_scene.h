@@ -35,6 +35,8 @@ const static char *LUA_DEFAULT_TEXT =
     "-- basic, coroutine, package, string manip., utf-8, table manip., and "
     "math modules are available\n";
 
+const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
+
 class TestLuaScene : public Scene {
  public:
   TestLuaScene(SceneSystem *ctx);

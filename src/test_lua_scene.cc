@@ -22,6 +22,7 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 }
+#include <lpeg_exported.h>
 #include <rlImGui.h>
 
 // standard library includes
@@ -68,6 +69,13 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   // lua_pushstring(lua_ctx, "assets_embed/?.so");  // +1
   // lua_settable(lua_ctx, -3);                     // -2
   // lua_pop(lua_ctx, 1);                           // -1
+
+  lua_pushcfunction(lua_ctx, luaopen_lpeg);       // +1
+  lua_setglobal(lua_ctx, "luaopen_lpeg_global");  // -1
+
+  std::ofstream lua_lpeg_of("/lpeg.lua",
+                            std::ios_base::out | std::ios_base::trunc);
+  lua_lpeg_of << LUA_LPEG_LOAD_SCRIPT;
 }
 
 TestLuaScene::~TestLuaScene() { lua_close(lua_ctx); }
