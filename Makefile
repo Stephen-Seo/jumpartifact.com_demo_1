@@ -113,7 +113,7 @@ third_party/lua_out/include/lua.h third_party/lua_out/include/lualib.h third_par
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/luaconf.h third_party/lua_out/include/luaconf.h
 	install -D -m644 third_party/lua-${LUA_VERSION}/src/lauxlib.h third_party/lua_out/include/lauxlib.h
 
-third_party/lua_out/lib/liblua.a: third_party/lua-${LUA_VERSION}
+third_party/lua_out/lib/liblua.a: third_party/lua-${LUA_VERSION} third_party/emsdk_git/emsdk_env.sh
 	cd third_party \
 		&& cd lua-${LUA_VERSION} \
 		&& patch -p1 < ${CURRENT_WORKING_DIR}/third_party/lua_src_Makefile_wasm.patch \
