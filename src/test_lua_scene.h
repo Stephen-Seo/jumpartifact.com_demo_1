@@ -20,6 +20,7 @@
 #include "scene_system.h"
 
 // standard library includes
+#include <bitset>
 #include <string>
 
 // third party includes
@@ -33,8 +34,13 @@ constexpr int FILENAME_BUF_SIZE = 1024;
 const static char *LUA_DEFAULT_TEXT =
     "-- Input Lua code here.\n"
     "-- basic, coroutine, package, string manip., utf-8, table manip.,\n"
-    "-- math, io, os, and debug modules are available\n"
-    "-- require('moonscript') is also available\n";
+    "-- math, io, os, and debug modules are available\n";
+
+const static char *MOONSCRIPT_HELP_TEXT =
+    "-- moonscript is loaded.\n"
+    "-- This means you can save a \"test.moon\",\n"
+    "-- and executing it will run as moonscript.\n"
+    "-- Also try require('test') for \"test.moon\".\n";
 
 const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
 
@@ -48,6 +54,8 @@ class TestLuaScene : public Scene {
   virtual void draw_rlimgui(SceneSystem *ctx) override;
   virtual bool allow_draw_below(SceneSystem *ctx) override;
 
+  void reset();
+
  private:
   enum class ExecState { PENDING, SUCCESS, FAILURE };
 
@@ -55,8 +63,12 @@ class TestLuaScene : public Scene {
   std::array<char, FILENAME_BUF_SIZE> filename;
   std::string error_text;
   std::string save_error_text;
+  std::string save_error_text_err;
   lua_State *lua_ctx;
+  // 0 - moonscript is loaded
+  std::bitset<32> flags;
   ExecState exec_state;
+  ExecState saveload_state;
 };
 
 #endif
