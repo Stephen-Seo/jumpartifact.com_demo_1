@@ -132,9 +132,11 @@ third_party/lpeg-1.1.0: third_party/lpeg-1.1.0.tar.gz
 	cd third_party/ && tar -xf lpeg-1.1.0.tar.gz
 	cd third_party/lpeg-1.1.0 && patch -p1 < ${CURRENT_WORKING_DIR}/third_party/lpeg_emsdk_wasm.patch
 
-third_party/lpeg_out/lib/liblpeg.a third_party/lpeg_out/include/lpeg_exported.h: third_party/lpeg-1.1.0 third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h
+third_party/lpeg_out/lib/liblpeg.a: third_party/lpeg-1.1.0 third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h
 	${MAKE} EMSDK_SHELL=${EMSDK_SHELL} LUADIR=${CURRENT_WORKING_DIR}/third_party/lua_out/include -C third_party/lpeg-1.1.0 liblpeg.a
 	install -D -m644 third_party/lpeg-1.1.0/liblpeg.a third_party/lpeg_out/lib/liblpeg.a
+
+third_party/lpeg_out/include/lpeg_exported.h: third_party/lpeg_out/lib/liblpeg.a
 	install -D -m644 third_party/lpeg-1.1.0/lpeg_exported.h third_party/lpeg_out/include/lpeg_exported.h
 
 .PHONY: clean update format
