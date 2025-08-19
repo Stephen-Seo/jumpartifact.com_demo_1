@@ -4,7 +4,7 @@ else
 	COMMON_FLAGS := -sASSERTIONS
 endif
 
-INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git -Ithird_party/lua_out/include
+INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git -Ithird_party/lua_out/include -Ithird_party/lpeg_out/include
 
 CURRENT_WORKING_DIR != pwd
 EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
@@ -24,6 +24,14 @@ LUA_VERSION ?= 5.4.8
 LUA_DL_LINK ?= https://lua.org/ftp/lua-${LUA_VERSION}.tar.gz
 LUA_TAR_SHA256SUM ?= 4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae
 
+LPEG_DL_LINK ?= https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz
+LPEG_TAR_SHA256SUM ?= 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
+
+MOONSCRIPT_VERSION_TAG ?= v0.5.0
+MOONSCRIPT_VER_NUM := $(subst v0,0,${MOONSCRIPT_VERSION_TAG})
+MOONSCRIPT_DL_LINK ?= https://github.com/leafo/moonscript/archive/refs/tags/${MOONSCRIPT_VERSION_TAG}.tar.gz
+MOONSCRIPT_TAR_SHA256SUM ?= 1adb5bb38f9c6f306250f6e90d92796fe100408ee062ac0d14f3c4c22c92e682
+
 SOURCES != find src -regex '.*\.cc$$'
 HEADERS != find src -regex '.*\.h$$'
 
@@ -32,7 +40,7 @@ OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
 
 all: dist/index.html
 
-dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a
+dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a assets_embed/moonscript
 	@mkdir -p dist
 	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
@@ -40,6 +48,8 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		-Lthird_party/imgui_out -limgui \
 		third_party/rlImGui_out/rlImGui.cpp.o \
 		-Lthird_party/lua_out/lib -llua \
+		-Lthird_party/lpeg_out/lib -llpeg \
+		--embed-file assets_embed \
 		--shell-file custom_shell.html \
 		-sEXPORTED_FUNCTIONS=_main \
 		${COMMON_FLAGS} \
@@ -96,7 +106,7 @@ third_party/emsdk_git/emsdk_env.sh:
 	cd ./third_party/emsdk_git && git pull
 	cd ./third_party/emsdk_git && ./emsdk install "${EMSDK_VERSION}" && ./emsdk activate "${EMSDK_VERSION}"
 
-${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git third_party/imgui_git third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h | format
+${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git third_party/imgui_git third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h third_party/lpeg_out/include/lpeg_exported.h | format
 	@mkdir -p "$(dir $@)"
 	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
@@ -120,6 +130,32 @@ third_party/lua_out/lib/liblua.a: third_party/lua-${LUA_VERSION} third_party/ems
 		&& ${MAKE} EMSDK_SHELL=${EMSDK_SHELL} -C src \
 		&& install -D -m644 src/liblua.a ${CURRENT_WORKING_DIR}/third_party/lua_out/lib/liblua.a
 
+third_party/lpeg-1.1.0.tar.gz:
+	curl -o third_party/lpeg-1.1.0.tar.gz ${LPEG_DL_LINK}
+	sha256sum third_party/lpeg-1.1.0.tar.gz | grep ${LPEG_TAR_SHA256SUM} || (rm -f third_party/lpeg-1.1.0.tar.gz && /usr/bin/false)
+
+third_party/lpeg-1.1.0: third_party/lpeg-1.1.0.tar.gz
+	cd third_party/ && tar -xf lpeg-1.1.0.tar.gz
+	cd third_party/lpeg-1.1.0 && patch -p1 < ${CURRENT_WORKING_DIR}/third_party/lpeg_emsdk_wasm.patch
+
+third_party/lpeg_out/lib/liblpeg.a: third_party/lpeg-1.1.0 third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h
+	${MAKE} EMSDK_SHELL=${EMSDK_SHELL} LUADIR=${CURRENT_WORKING_DIR}/third_party/lua_out/include -C third_party/lpeg-1.1.0 liblpeg.a
+	install -D -m644 third_party/lpeg-1.1.0/liblpeg.a third_party/lpeg_out/lib/liblpeg.a
+
+third_party/lpeg_out/include/lpeg_exported.h: third_party/lpeg_out/lib/liblpeg.a
+	install -D -m644 third_party/lpeg-1.1.0/lpeg_exported.h third_party/lpeg_out/include/lpeg_exported.h
+
+third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz:
+	curl -L -o third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz ${MOONSCRIPT_DL_LINK}
+	sha256sum third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz | grep ${MOONSCRIPT_TAR_SHA256SUM} || (rm -f third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz && /usr/bin/false)
+
+assets_embed/moonscript: third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz
+	@mkdir -p assets_embed
+	mkdir -p /tmp/${USER}_JADEMO1_TEMP/
+	cd /tmp/${USER}_JADEMO1_TEMP && tar -xf ${CURRENT_WORKING_DIR}/third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz moonscript-${MOONSCRIPT_VER_NUM}/moonscript
+	cp -r /tmp/${USER}_JADEMO1_TEMP/moonscript-${MOONSCRIPT_VER_NUM}/moonscript ./assets_embed/
+	rm -rf /tmp/${USER}_JADEMO1_TEMP/
+
 .PHONY: clean update format
 
 clean:
@@ -131,6 +167,9 @@ clean:
 	rm -rf third_party/imgui_out
 	rm -rf third_party/lua_out
 	rm -rf third_party/lua-${LUA_VERSION}
+	rm -rf third_party/lpeg_out
+	rm -rf third_party/lpeg-1.1.0
+	rm -rf assets_embed/moonscript
 
 update:
 	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git
