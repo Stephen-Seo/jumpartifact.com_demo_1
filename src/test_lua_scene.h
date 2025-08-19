@@ -44,6 +44,9 @@ const static char *MOONSCRIPT_HELP_TEXT =
 
 const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
 
+const static char *MOONSCRIPT_TEMP_FILENAME =
+    "/TEMPORARY_FILE_SAVE_BUFFER.moon";
+
 class TestLuaScene : public Scene {
  public:
   TestLuaScene(SceneSystem *ctx);

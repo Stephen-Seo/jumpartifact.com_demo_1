@@ -22,6 +22,7 @@ extern "C" {
 #include <lauxlib.h>
 #include <lualib.h>
 }
+#include <emscripten.h>
 #include <lpeg_exported.h>
 #include <rlImGui.h>
 
@@ -111,7 +112,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   ImGui::Begin("Test Lua");
 
   ImGui::InputTextMultiline("Lua Code", buf.data(), TEXT_BUF_SIZE);
-  if (ImGui::Button("Execute")) {
+  if (ImGui::Button("ExecuteAsLua")) {
     int ret = luaL_dostring(lua_ctx, buf.data());
     if (ret == 1) {
       exec_state = ExecState::FAILURE;
@@ -126,6 +127,33 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     }
     saveload_state = ExecState::PENDING;
     save_error_text_err.clear();
+  }
+  ImGui::SameLine();
+  if (ImGui::Button("ExecuteAsMoonscript")) {
+    std::ofstream ofs(MOONSCRIPT_TEMP_FILENAME,
+                      std::ios_base::out | std::ios_base::trunc);
+    ofs.write(buf.data(), std::strlen(buf.data()));
+    ofs.close();
+    std::string exec_str = std::format(
+        "moonscript = require('moonscript.base')\n"
+        "to_call = moonscript.loadfile('{}')\n"
+        "to_call()",
+        MOONSCRIPT_TEMP_FILENAME);
+    int ret = luaL_dostring(lua_ctx, exec_str.c_str());
+    if (ret == 1) {
+      exec_state = ExecState::FAILURE;
+      if (lua_isstring(lua_ctx, -1) == 1) {
+        error_text = lua_tostring(lua_ctx, -1);
+      } else {
+        error_text = "Error object not a string!";
+      }
+      lua_pop(lua_ctx, 1);
+    } else {
+      exec_state = ExecState::SUCCESS;
+    }
+    saveload_state = ExecState::PENDING;
+    save_error_text_err.clear();
+    EM_ASM(FS.unlink(UTF8ToString($0)), MOONSCRIPT_TEMP_FILENAME);
   }
   ImGui::SameLine();
   if (ImGui::Button("Reset")) {
@@ -161,6 +189,10 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     std::ifstream ifs = std::ifstream(filename.data());
     std::string file_content{};
     size_t idx = 0;
+    if (!ifs.good()) {
+      saveload_state = ExecState::FAILURE;
+      std::strcpy(buf.data(), "Failed to load.");
+    }
     while (ifs.good()) {
       ifs.getline(buf.data() + idx, buf.size() - idx);
       idx += ifs.gcount();
