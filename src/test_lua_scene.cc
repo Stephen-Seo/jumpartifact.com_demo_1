@@ -53,6 +53,12 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   lua_pop(lua_ctx, 1);                                          // -1
   luaL_requiref(lua_ctx, LUA_MATHLIBNAME, luaopen_math, 1);     // +1
   lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_IOLIBNAME, luaopen_io, 1);         // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_OSLIBNAME, luaopen_os, 1);         // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_DBLIBNAME, luaopen_debug, 1);      // +1
+  lua_pop(lua_ctx, 1);                                          // -1
 
   // Put "assets_embed/?/init.lua" to "package.path"
   lua_getglobal(lua_ctx, "package");  // +1

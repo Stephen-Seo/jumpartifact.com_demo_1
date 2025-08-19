@@ -32,8 +32,9 @@ constexpr int FILENAME_BUF_SIZE = 1024;
 
 const static char *LUA_DEFAULT_TEXT =
     "-- Input Lua code here.\n"
-    "-- basic, coroutine, package, string manip., utf-8, table manip., and "
-    "math modules are available\n";
+    "-- basic, coroutine, package, string manip., utf-8, table manip.,\n"
+    "-- math, io, os, and debug modules are available\n"
+    "-- require('moonscript') is also available\n";
 
 const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
 
