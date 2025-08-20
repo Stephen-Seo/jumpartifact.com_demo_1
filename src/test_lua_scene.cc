@@ -185,7 +185,14 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     case ExecState::FAILURE:
       ImGui::Text("Script run failure! %s", error_text.c_str());
       break;
+    case ExecState::DL_SUCCESS:
+      // Intentionally left blank
+      break;
+    case ExecState::DL_FAILURE:
+      // Intentionally left blank
+      break;
     case ExecState::UPDATED:
+      // Intentionally left blank
       break;
   }
   ImGui::InputText("Filename (tmp storage)", filename.data(), filename.size());
@@ -206,27 +213,15 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   if (ImGui::Button("Load")) {
     exec_state = ExecState::PENDING;
     saveload_state = ExecState::SUCCESS;
-    std::ifstream ifs = std::ifstream(filename.data());
-    std::string file_content{};
-    size_t idx = 0;
-    if (!ifs.good()) {
+
+    std::optional<std::string> res = load_from_file(filename.data());
+    if (res.has_value()) {
+      std::strcpy(buf.data(), res.value().c_str());
+    } else {
       saveload_state = ExecState::FAILURE;
       std::strcpy(buf.data(), "Failed to load.");
     }
-    while (ifs.good()) {
-      ifs.getline(buf.data() + idx, buf.size() - idx);
-      idx += ifs.gcount();
-      if (idx + 2 >= buf.size()) {
-        saveload_state = ExecState::FAILURE;
-        std::strcpy(buf.data(), "Failed to load.");
-        break;
-      }
-      buf.data()[idx - 1] = '\n';
-      if (ifs.eof()) {
-        buf.data()[idx] = 0;
-      }
-    }
-    ifs.close();
+
     save_error_text_err.clear();
     flags.reset(2);
   }
@@ -269,6 +264,27 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       save_error_text_err.clear();
     }
   }
+  if (ImGui::Button("Download File")) {
+    std::optional<std::string> loaded = load_from_file(filename.data());
+    if (loaded.has_value()) {
+      EM_ASM(const string_content = UTF8ToString($0);
+             const string_filename = UTF8ToString($1);
+             const blob = new Blob([string_content],
+                                   {
+                                     type:
+                                       'text/plain'
+                                   });
+             const url = URL.createObjectURL(blob);
+             const link = document.createElement('a'); link.href = url;
+             link.download = string_filename; document.body.appendChild(link);
+             link.click(); document.body.removeChild(link);
+             URL.revokeObjectURL(url);
+             , loaded.value().c_str(), filename.data());
+      saveload_state = ExecState::DL_SUCCESS;
+    } else {
+      saveload_state = ExecState::DL_FAILURE;
+    }
+  }
   switch (saveload_state) {
     case ExecState::PENDING:
       save_error_text.clear();
@@ -284,6 +300,16 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       save_error_text = std::format(
           "{} '{}' Failure!", flags.test(2) ? "Saving to" : "Loading from",
           filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::DL_SUCCESS:
+      save_error_text =
+          std::format("Downloading '{}' Success!", filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::DL_FAILURE:
+      save_error_text =
+          std::format("Downloading '{}' Failure!", filename.data());
       saveload_state = ExecState::UPDATED;
       break;
     case ExecState::UPDATED:
@@ -316,4 +342,36 @@ std::optional<const char *> TestLuaScene::get_buffer_once() {
 
   flags.set(1);
   return buf.data();
+}
+
+std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
+  std::ifstream ifs(filename);
+  std::string content{};
+  std::array<char, 2048> buf;
+
+  if (!ifs.good()) {
+    return std::nullopt;
+  }
+  while (ifs.good()) {
+    ifs.getline(buf.data(), buf.size());
+    if (ifs.fail()) {
+      return std::nullopt;
+    }
+    const auto read_size = ifs.gcount();
+    if (read_size > 0) {
+      if (ifs.eof()) {
+        buf[read_size] = 0;
+      } else {
+        buf[read_size - 1] = '\n';
+        buf[read_size] = 0;
+      }
+      content += buf.data();
+    }
+  }
+
+  if (ifs.fail()) {
+    return std::nullopt;
+  }
+
+  return content;
 }

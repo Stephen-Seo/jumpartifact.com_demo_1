@@ -60,7 +60,14 @@ class TestLuaScene : public Scene {
   std::optional<const char *> get_buffer_once();
 
  private:
-  enum class ExecState { PENDING, SUCCESS, FAILURE, UPDATED };
+  enum class ExecState {
+    PENDING,
+    SUCCESS,
+    FAILURE,
+    DL_SUCCESS,
+    DL_FAILURE,
+    UPDATED
+  };
 
   std::array<char, TEXT_BUF_SIZE> buf;
   std::array<char, FILENAME_BUF_SIZE> filename;
@@ -74,6 +81,8 @@ class TestLuaScene : public Scene {
   std::bitset<32> flags;
   ExecState exec_state;
   ExecState saveload_state;
+
+  static std::optional<std::string> load_from_file(const char *filename);
 };
 
 #endif
