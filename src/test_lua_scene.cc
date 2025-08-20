@@ -185,6 +185,8 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     case ExecState::FAILURE:
       ImGui::Text("Script run failure! %s", error_text.c_str());
       break;
+    case ExecState::UPDATED:
+      break;
   }
   ImGui::InputText("Filename (tmp storage)", filename.data(), filename.size());
   if (ImGui::Button("Save")) {
@@ -198,6 +200,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     }
     exec_state = ExecState::PENDING;
     save_error_text_err.clear();
+    flags.set(2);
   }
   ImGui::SameLine();
   if (ImGui::Button("Load")) {
@@ -225,6 +228,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     }
     ifs.close();
     save_error_text_err.clear();
+    flags.reset(2);
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecLuaFile")) {
@@ -267,17 +271,26 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   }
   switch (saveload_state) {
     case ExecState::PENDING:
-      save_error_text = "N/A";
+      save_error_text.clear();
+      saveload_state = ExecState::UPDATED;
       break;
     case ExecState::SUCCESS:
-      save_error_text = "Success!";
+      save_error_text = std::format(
+          "{} '{}' Success!", flags.test(2) ? "Saving to" : "Loading from",
+          filename.data());
+      saveload_state = ExecState::UPDATED;
       break;
     case ExecState::FAILURE:
-      save_error_text = "Failure!";
+      save_error_text = std::format(
+          "{} '{}' Failure!", flags.test(2) ? "Saving to" : "Loading from",
+          filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::UPDATED:
+      // intentionally left blank
       break;
   }
-  ImGui::Text("Save/Load Status: %s\n%s", save_error_text.c_str(),
-              save_error_text_err.c_str());
+  ImGui::Text("%s\n%s", save_error_text.c_str(), save_error_text_err.c_str());
   ImGui::End();  // Test Lua
 }
 
