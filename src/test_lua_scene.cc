@@ -132,7 +132,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   if (ImGui::Button("ExecuteAsLua")) {
     int ret = luaL_dostring(lua_ctx, buf.data());
     if (ret == 1) {
-      exec_state = ExecState::FAILURE;
+      exec_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         error_text = lua_tostring(lua_ctx, -1);
       } else {
@@ -140,7 +140,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
-      exec_state = ExecState::SUCCESS;
+      exec_state = ExecState::GENERIC_SUCCESS;
     }
     saveload_state = ExecState::PENDING;
     save_error_text_err.clear();
@@ -159,7 +159,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
 
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
-      exec_state = ExecState::FAILURE;
+      exec_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         error_text = lua_tostring(lua_ctx, -1);
       } else {
@@ -167,7 +167,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
-      exec_state = ExecState::SUCCESS;
+      exec_state = ExecState::GENERIC_SUCCESS;
     }
     saveload_state = ExecState::PENDING;
     save_error_text_err.clear();
@@ -179,19 +179,13 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   switch (exec_state) {
     case ExecState::PENDING:
       break;
-    case ExecState::SUCCESS:
+    case ExecState::GENERIC_SUCCESS:
       ImGui::Text("Script run Success!");
       break;
-    case ExecState::FAILURE:
+    case ExecState::GENERIC_FAILURE:
       ImGui::Text("Script run failure! %s", error_text.c_str());
       break;
-    case ExecState::DL_SUCCESS:
-      // Intentionally left blank
-      break;
-    case ExecState::DL_FAILURE:
-      // Intentionally left blank
-      break;
-    case ExecState::UPDATED:
+    default:
       // Intentionally left blank
       break;
   }
@@ -199,38 +193,40 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   if (ImGui::Button("Save")) {
     std::ofstream ofs = std::ofstream(
         filename.data(), std::ios_base::out | std::ios_base::trunc);
-    ofs.write(buf.data(), std::strlen(buf.data()));
     if (ofs.good()) {
-      saveload_state = ExecState::SUCCESS;
+      ofs.write(buf.data(), std::strlen(buf.data()));
+      if (ofs.good()) {
+        saveload_state = ExecState::SAVE_SUCCESS;
+      } else {
+        saveload_state = ExecState::SAVE_FAILURE;
+      }
     } else {
-      saveload_state = ExecState::FAILURE;
+      saveload_state = ExecState::SAVE_FAILURE;
     }
     exec_state = ExecState::PENDING;
     save_error_text_err.clear();
-    flags.set(2);
   }
   ImGui::SameLine();
   if (ImGui::Button("Load")) {
     exec_state = ExecState::PENDING;
-    saveload_state = ExecState::SUCCESS;
+    saveload_state = ExecState::LOAD_SUCCESS;
 
     std::optional<std::string> res = load_from_file(filename.data());
     if (res.has_value()) {
       std::strcpy(buf.data(), res.value().c_str());
     } else {
-      saveload_state = ExecState::FAILURE;
+      saveload_state = ExecState::LOAD_FAILURE;
       std::strcpy(buf.data(), "Failed to load.");
     }
 
     save_error_text_err.clear();
-    flags.reset(2);
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecLuaFile")) {
     exec_state = ExecState::PENDING;
     int ret = luaL_dofile(lua_ctx, filename.data());
     if (ret == 1) {
-      saveload_state = ExecState::FAILURE;
+      saveload_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         save_error_text_err = lua_tostring(lua_ctx, -1);
       } else {
@@ -238,7 +234,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
-      saveload_state = ExecState::SUCCESS;
+      saveload_state = ExecState::GENERIC_SUCCESS;
       save_error_text_err.clear();
     }
   }
@@ -252,7 +248,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
         filename.data());
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
-      saveload_state = ExecState::FAILURE;
+      saveload_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         save_error_text_err = lua_tostring(lua_ctx, -1);
       } else {
@@ -260,7 +256,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
-      saveload_state = ExecState::SUCCESS;
+      saveload_state = ExecState::GENERIC_SUCCESS;
       save_error_text_err.clear();
     }
   }
@@ -285,21 +281,56 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       saveload_state = ExecState::DL_FAILURE;
     }
   }
+  ImGui::SameLine();
+  if (ImGui::Button("Upload File")) {
+    EM_ASM(const file_input = document.createElement('input');
+           file_input.type = 'file'; file_input.accept = 'text/plain';
+
+           file_input.addEventListener(
+               'change',
+               function(event) {
+                 const file = event.target.files[0];
+                 if (file) {
+                   const reader = new FileReader();
+                   reader.onload = (e) => {
+                     const file_content = e.target.result;
+                     Module.ccall('upload_script_to_test_lua',
+                                  'number', ['number'],
+                                  [stringToNewUTF8(file_content)]);
+                   };
+                   reader.readAsText(file);
+                 }
+               });
+
+           file_input.click(););
+  }
   switch (saveload_state) {
     case ExecState::PENDING:
       save_error_text.clear();
       saveload_state = ExecState::UPDATED;
       break;
-    case ExecState::SUCCESS:
-      save_error_text = std::format(
-          "{} '{}' Success!", flags.test(2) ? "Saving to" : "Loading from",
-          filename.data());
+    case ExecState::GENERIC_SUCCESS:
+      // Intentionally left blank
+      break;
+    case ExecState::GENERIC_FAILURE:
+      // Intentionally left blank
+      break;
+    case ExecState::SAVE_SUCCESS:
+      save_error_text = std::format("Saving to '{}' Success!", filename.data());
       saveload_state = ExecState::UPDATED;
       break;
-    case ExecState::FAILURE:
-      save_error_text = std::format(
-          "{} '{}' Failure!", flags.test(2) ? "Saving to" : "Loading from",
-          filename.data());
+    case ExecState::SAVE_FAILURE:
+      save_error_text = std::format("Saving to '{}' Failure!", filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::LOAD_SUCCESS:
+      save_error_text =
+          std::format("Loading from '{}' Success!", filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::LOAD_FAILURE:
+      save_error_text =
+          std::format("Loading from '{}' Failure!", filename.data());
       saveload_state = ExecState::UPDATED;
       break;
     case ExecState::DL_SUCCESS:
@@ -310,6 +341,14 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     case ExecState::DL_FAILURE:
       save_error_text =
           std::format("Downloading '{}' Failure!", filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::UP_SUCCESS:
+      save_error_text = std::format("Uploading '{}' Success!", filename.data());
+      saveload_state = ExecState::UPDATED;
+      break;
+    case ExecState::UP_FAILURE:
+      save_error_text = std::format("Uploading '{}' Failure!", filename.data());
       saveload_state = ExecState::UPDATED;
       break;
     case ExecState::UPDATED:
@@ -342,6 +381,21 @@ std::optional<const char *> TestLuaScene::get_buffer_once() {
 
   flags.set(1);
   return buf.data();
+}
+
+void TestLuaScene::upload_text(const char *text) {
+  std::ofstream ofs =
+      std::ofstream(filename.data(), std::ios_base::out | std::ios_base::trunc);
+  if (ofs.good()) {
+    ofs.write(text, std::strlen(text));
+    if (ofs.good()) {
+      saveload_state = ExecState::UP_SUCCESS;
+    } else {
+      saveload_state = ExecState::UP_FAILURE;
+    }
+  } else {
+    saveload_state = ExecState::UP_FAILURE;
+  }
 }
 
 std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {

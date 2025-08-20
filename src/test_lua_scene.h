@@ -58,14 +58,21 @@ class TestLuaScene : public Scene {
   void reset();
 
   std::optional<const char *> get_buffer_once();
+  void upload_text(const char *);
 
  private:
   enum class ExecState {
     PENDING,
-    SUCCESS,
-    FAILURE,
+    GENERIC_SUCCESS,
+    GENERIC_FAILURE,
+    SAVE_SUCCESS,
+    SAVE_FAILURE,
+    LOAD_SUCCESS,
+    LOAD_FAILURE,
     DL_SUCCESS,
     DL_FAILURE,
+    UP_SUCCESS,
+    UP_FAILURE,
     UPDATED
   };
 
@@ -77,7 +84,6 @@ class TestLuaScene : public Scene {
   lua_State *lua_ctx;
   // 0 - moonscript is loaded
   // 1 - buffer fetched once this frame
-  // 2 - save/load attempt was a save (load if false)
   std::bitset<32> flags;
   ExecState exec_state;
   ExecState saveload_state;

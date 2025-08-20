@@ -73,6 +73,9 @@ class SceneSystem {
   FlagsType& get_flags();
   const FlagsType& get_flags() const;
 
+  const std::deque<SceneType>* get_scene_stack() const;
+  std::optional<SceneType*> get_top();
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {

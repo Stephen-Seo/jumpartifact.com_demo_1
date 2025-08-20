@@ -51,7 +51,8 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		-Lthird_party/lpeg_out/lib -llpeg \
 		--embed-file assets_embed \
 		--shell-file custom_shell.html \
-		-sEXPORTED_FUNCTIONS=_main \
+		-sEXPORTED_FUNCTIONS=_main,_upload_script_to_test_lua \
+		-sEXPORTED_RUNTIME_METHODS=ccall \
 		${COMMON_FLAGS} \
 		${OBJECTS}
 	ln -sf ja_demo1.html dist/index.html

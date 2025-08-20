@@ -178,6 +178,17 @@ SceneSystem::FlagsType &SceneSystem::get_flags() { return flags; }
 
 const SceneSystem::FlagsType &SceneSystem::get_flags() const { return flags; }
 
+const std::deque<SceneSystem::SceneType> *SceneSystem::get_scene_stack() const {
+  return &scene_stack;
+}
+
+std::optional<SceneSystem::SceneType *> SceneSystem::get_top() {
+  if (scene_stack.empty()) {
+    return std::nullopt;
+  }
+  return &scene_stack.back();
+}
+
 void SceneSystem::handle_actions() {
   while (!queued_actions.empty()) {
     switch (queued_actions.front().type) {
