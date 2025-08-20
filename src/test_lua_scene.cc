@@ -284,7 +284,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   ImGui::SameLine();
   if (ImGui::Button("Upload File")) {
     EM_ASM(const file_input = document.createElement('input');
-           file_input.type = 'file'; file_input.accept = 'text/plain';
+           file_input.type = 'file'; file_input.accept = '.txt,.lua,.moon';
 
            file_input.addEventListener(
                'change',
