@@ -32,6 +32,23 @@ extern "C" {
 #include <format>
 #include <fstream>
 
+extern "C" {
+int internal_lua_load_buffer(lua_State *ctx) {
+  TestLuaScene *scene = reinterpret_cast<TestLuaScene *>(
+      lua_touserdata(ctx, lua_upvalueindex(1)));
+
+  std::optional<const char *> buf_ptr = scene->get_buffer_once();
+
+  if (buf_ptr.has_value()) {
+    lua_pushstring(ctx, buf_ptr.value());  // +1
+  } else {
+    lua_pushnil(ctx);  // +1
+  }
+
+  return 1;
+}
+}  // extern "C"
+
 TestLuaScene::TestLuaScene(SceneSystem *ctx)
     : Scene(ctx),
       buf{},
@@ -100,7 +117,7 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
 
 TestLuaScene::~TestLuaScene() { lua_close(lua_ctx); }
 
-void TestLuaScene::update(SceneSystem *ctx, float dt) {}
+void TestLuaScene::update(SceneSystem *ctx, float dt) { flags.reset(1); }
 
 void TestLuaScene::draw(SceneSystem *ctx) {}
 
@@ -130,15 +147,16 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecuteAsMoonscript")) {
-    std::ofstream ofs(MOONSCRIPT_TEMP_FILENAME,
-                      std::ios_base::out | std::ios_base::trunc);
-    ofs.write(buf.data(), std::strlen(buf.data()));
-    ofs.close();
+    lua_pushlightuserdata(lua_ctx, this);                          // +1
+    lua_pushcclosure(lua_ctx, internal_lua_load_buffer, 1);        // -1, +1
+    lua_setglobal(lua_ctx, "EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN");  // -1
+
     std::string exec_str = std::format(
         "moonscript = require('moonscript.base')\n"
-        "to_call = moonscript.loadfile('{}')\n"
-        "to_call()",
-        MOONSCRIPT_TEMP_FILENAME);
+        "moon_string = EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN()\n"
+        "to_call = moonscript.loadstring(moon_string)\n"
+        "to_call()");
+
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
       exec_state = ExecState::FAILURE;
@@ -153,7 +171,6 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     }
     saveload_state = ExecState::PENDING;
     save_error_text_err.clear();
-    EM_ASM(FS.unlink(UTF8ToString($0)), MOONSCRIPT_TEMP_FILENAME);
   }
   ImGui::SameLine();
   if (ImGui::Button("Reset")) {
@@ -277,4 +294,13 @@ void TestLuaScene::reset() {
     size_t idx = std::strlen(buf.data());
     sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
   }
+}
+
+std::optional<const char *> TestLuaScene::get_buffer_once() {
+  if (flags.test(1)) {
+    return std::nullopt;
+  }
+
+  flags.set(1);
+  return buf.data();
 }
