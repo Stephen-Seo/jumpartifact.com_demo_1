@@ -27,10 +27,6 @@
 #include "scene_system.h"
 #include "test_lua_scene.h"
 
-extern SceneSystem *global_ctx;
-
-SceneSystem *global_ctx = nullptr;
-
 EM_JS(int, canvas_get_width, (),
       { return document.getElementById("canvas").clientWidth; });
 EM_JS(int, canvas_get_height, (),
@@ -46,26 +42,9 @@ EM_BOOL resize_event_callback(int event_type, const EmscriptenUiEvent *event,
   return false;
 }
 
-int upload_script_to_test_lua(const char *string) {
-  if (!string) {
-    return 1;
-  }
-
-  if (!global_ctx) {
-    std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
-    return 1;
-  }
-
-  std::optional<SceneSystem::SceneType *> top = global_ctx->get_top();
-  if (!top.has_value()) {
-    std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
-    return 1;
-  }
-
-  TestLuaScene *test_lua_scene =
-      dynamic_cast<TestLuaScene *>(top.value()->get());
-  if (!test_lua_scene) {
-    std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
+int upload_script_to_test_lua(const char *string,
+                              TestLuaScene *test_lua_scene) {
+  if (!string || !test_lua_scene) {
     return 1;
   }
 
@@ -111,8 +90,6 @@ int main() {
                                  resize_event_callback);
 
   SceneSystem scenes{};
-
-  global_ctx = &scenes;
 
   emscripten_set_fullscreenchange_callback("canvas", &scenes, true,
                                            handle_fullscreen_event);

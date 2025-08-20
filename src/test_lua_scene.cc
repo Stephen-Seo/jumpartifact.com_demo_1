@@ -294,15 +294,15 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
                    const reader = new FileReader();
                    reader.onload = (e) => {
                      const file_content = e.target.result;
-                     Module.ccall('upload_script_to_test_lua',
-                                  'number', ['number'],
-                                  [stringToNewUTF8(file_content)]);
+                     Module.ccall('upload_script_to_test_lua', 'number',
+                                  [ 'number', 'number' ],
+                                  [ stringToNewUTF8(file_content), $0 ]);
                    };
                    reader.readAsText(file);
                  }
                });
 
-           file_input.click(););
+           file_input.click();, this);
   }
   switch (saveload_state) {
     case ExecState::PENDING:
