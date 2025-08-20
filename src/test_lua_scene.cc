@@ -409,6 +409,9 @@ std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
   while (ifs.good()) {
     ifs.getline(buf.data(), buf.size());
     if (ifs.fail()) {
+      if (ifs.eof() && !content.empty()) {
+        return content;
+      }
       return std::nullopt;
     }
     const auto read_size = ifs.gcount();
@@ -423,7 +426,7 @@ std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
     }
   }
 
-  if (ifs.fail()) {
+  if (ifs.fail() && content.empty()) {
     return std::nullopt;
   }
 
