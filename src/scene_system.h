@@ -19,6 +19,7 @@
 
 #include <bitset>
 #include <chrono>
+#include <cstdint>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -39,6 +40,8 @@ class Scene {
 
   // Return true to ALLOW drawing lower scenes on stack.
   virtual bool allow_draw_below(SceneSystem* ctx) = 0;
+
+  uint32_t get_scene_id(SceneSystem* ctx);
 
  private:
 };
@@ -88,6 +91,9 @@ class SceneSystem {
       std::string name,
       std::optional<std::function<void(void*)> > override_cleanup_fn);
 
+  uint32_t get_scene_id(Scene*);
+  std::optional<uint32_t> get_top_scene_id();
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -109,6 +115,8 @@ class SceneSystem {
   // 2 - toggle font size
   // 3 - demo window open
   std::bitset<32> private_flags;
+  std::unordered_map<std::string, uint32_t> scene_type_map;
+  uint32_t scene_type_counter;
 
   void handle_actions();
 };

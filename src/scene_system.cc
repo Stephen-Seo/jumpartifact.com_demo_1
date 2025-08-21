@@ -34,12 +34,17 @@
 Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
 
+uint32_t Scene::get_scene_id(SceneSystem *ctx) {
+  return ctx->get_scene_id(this);
+}
+
 SceneSystem::SceneSystem()
     : scene_stack(),
       dt{1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F, 1.0F},
       dt_idx(0),
       flags(),
-      private_flags() {}
+      private_flags(),
+      scene_type_counter(0) {}
 
 SceneSystem::~SceneSystem() {}
 
@@ -218,6 +223,25 @@ bool SceneSystem::clear_map_value(
     return true;
   }
   return false;
+}
+
+uint32_t SceneSystem::get_scene_id(Scene *scene) {
+  if (auto iter = scene_type_map.find(typeid(scene).name());
+      iter != scene_type_map.end()) {
+    return iter->second;
+  }
+
+  scene_type_map.insert(
+      std::make_pair(typeid(scene).name(), scene_type_counter++));
+  return scene_type_counter - 1;
+}
+
+std::optional<uint32_t> SceneSystem::get_top_scene_id() {
+  if (scene_stack.empty()) {
+    return std::nullopt;
+  }
+
+  return get_scene_id(scene_stack.back().get());
 }
 
 void SceneSystem::handle_actions() {
