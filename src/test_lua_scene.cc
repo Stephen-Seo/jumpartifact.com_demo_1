@@ -152,6 +152,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
 
   ImGui::InputTextMultiline("Lua Code", buf.data(), TEXT_BUF_SIZE);
   if (ImGui::Button("ExecuteAsLua")) {
+    reset_error_texts();
     int ret = luaL_dostring(lua_ctx, buf.data());
     if (ret == 1) {
       exec_state = ExecState::GENERIC_FAILURE;
@@ -164,11 +165,10 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     } else {
       exec_state = ExecState::GENERIC_SUCCESS;
     }
-    saveload_state = ExecState::PENDING;
-    save_error_text_err.clear();
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecuteAsMoonscript")) {
+    reset_error_texts();
     lua_pushlightuserdata(lua_ctx, this);                          // +1
     lua_pushcclosure(lua_ctx, internal_lua_load_buffer, 1);        // -1, +1
     lua_setglobal(lua_ctx, "EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN");  // -1
@@ -191,12 +191,11 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     } else {
       exec_state = ExecState::GENERIC_SUCCESS;
     }
-    saveload_state = ExecState::PENDING;
-    save_error_text_err.clear();
   }
   ImGui::SameLine();
   if (ImGui::Button("Reset")) {
     reset();
+    reset_error_texts();
   }
   switch (exec_state) {
     case ExecState::PENDING:
@@ -213,6 +212,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   }
   ImGui::InputText("Filename (tmp storage)", filename.data(), filename.size());
   if (ImGui::Button("Save")) {
+    reset_error_texts();
     std::ofstream ofs = std::ofstream(
         filename.data(), std::ios_base::out | std::ios_base::trunc);
     if (ofs.good()) {
@@ -225,12 +225,10 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
     } else {
       saveload_state = ExecState::SAVE_FAILURE;
     }
-    exec_state = ExecState::PENDING;
-    save_error_text_err.clear();
   }
   ImGui::SameLine();
   if (ImGui::Button("Load")) {
-    exec_state = ExecState::PENDING;
+    reset_error_texts();
     saveload_state = ExecState::LOAD_SUCCESS;
 
     std::optional<std::string> res = load_from_file(filename.data());
@@ -240,14 +238,13 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       saveload_state = ExecState::LOAD_FAILURE;
       std::strcpy(buf.data(), "Failed to load.");
     }
-
-    save_error_text_err.clear();
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecLuaFile")) {
-    exec_state = ExecState::PENDING;
+    reset_error_texts();
     int ret = luaL_dofile(lua_ctx, filename.data());
     if (ret == 1) {
+      save_error_text = "Failed to execute as Lua!";
       saveload_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         save_error_text_err = lua_tostring(lua_ctx, -1);
@@ -256,13 +253,13 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
+      save_error_text = "Successful exeuction as Lua!";
       saveload_state = ExecState::GENERIC_SUCCESS;
-      save_error_text_err.clear();
     }
   }
   ImGui::SameLine();
   if (ImGui::Button("ExecMoonscriptFile")) {
-    exec_state = ExecState::PENDING;
+    reset_error_texts();
     std::string exec_str = std::format(
         "moonscript = require('moonscript.base')\n"
         "to_call = moonscript.loadfile('{}')\n"
@@ -270,6 +267,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
         filename.data());
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
+      save_error_text = "Failed to execute as Moonscript!";
       saveload_state = ExecState::GENERIC_FAILURE;
       if (lua_isstring(lua_ctx, -1) == 1) {
         save_error_text_err = lua_tostring(lua_ctx, -1);
@@ -278,11 +276,12 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
       }
       lua_pop(lua_ctx, 1);
     } else {
+      save_error_text = "Successful exeuction as Moonscript!";
       saveload_state = ExecState::GENERIC_SUCCESS;
-      save_error_text_err.clear();
     }
   }
   if (ImGui::Button("Download File")) {
+    reset_error_texts();
     std::optional<std::string> loaded = load_from_file(filename.data());
     if (loaded.has_value()) {
       EM_ASM(const string_content = UTF8ToString($0);
@@ -305,6 +304,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   }
   ImGui::SameLine();
   if (ImGui::Button("Upload File")) {
+    reset_error_texts();
     EM_ASM(const file_input = document.createElement('input');
            file_input.type = 'file'; file_input.accept = '.txt,.lua,.moon';
 
@@ -461,4 +461,12 @@ std::optional<lua_State *> TestLuaScene::get_lctx(SceneSystem *ctx) const {
     return reinterpret_cast<lua_State *>(opt_void_ptr.value());
   }
   return std::nullopt;
+}
+
+void TestLuaScene::reset_error_texts() {
+  exec_state = ExecState::PENDING;
+  saveload_state = ExecState::PENDING;
+  error_text.clear();
+  save_error_text.clear();
+  save_error_text_err.clear();
 }

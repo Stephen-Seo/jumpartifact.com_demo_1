@@ -90,6 +90,8 @@ class TestLuaScene : public Scene {
   static std::optional<std::string> load_from_file(const char *filename);
 
   std::optional<lua_State *> get_lctx(SceneSystem *ctx) const;
+
+  void reset_error_texts();
 };
 
 #endif
