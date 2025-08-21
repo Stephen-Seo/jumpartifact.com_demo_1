@@ -14,7 +14,7 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#include "test_lua_scene.h"
+#include "script_edit_scene.h"
 
 // third party includes
 #include <imgui.h>
@@ -35,7 +35,7 @@ extern "C" {
 extern "C" {
 
 int upload_script_to_test_lua(const char *string,
-                              TestLuaScene *test_lua_scene) {
+                              ScriptEditScene *test_lua_scene) {
   if (!string) {
     return 1;
   } else if (!test_lua_scene) {
@@ -50,7 +50,7 @@ int upload_script_to_test_lua(const char *string,
 }
 
 int internal_lua_load_buffer(lua_State *ctx) {
-  TestLuaScene *scene = reinterpret_cast<TestLuaScene *>(
+  ScriptEditScene *scene = reinterpret_cast<ScriptEditScene *>(
       lua_touserdata(ctx, lua_upvalueindex(1)));
 
   std::optional<const char *> buf_ptr = scene->get_buffer_once();
@@ -66,7 +66,7 @@ int internal_lua_load_buffer(lua_State *ctx) {
 
 }  // extern "C"
 
-TestLuaScene::TestLuaScene(SceneSystem *ctx)
+ScriptEditScene::ScriptEditScene(SceneSystem *ctx)
     : Scene(ctx),
       buf{},
       error_text(),
@@ -145,22 +145,22 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   }
 }
 
-TestLuaScene::~TestLuaScene() {}
+ScriptEditScene::~ScriptEditScene() {}
 
-void TestLuaScene::update(SceneSystem *ctx, float dt) { flags.reset(1); }
+void ScriptEditScene::update(SceneSystem *ctx, float dt) { flags.reset(1); }
 
-void TestLuaScene::draw(SceneSystem *ctx) {}
+void ScriptEditScene::draw(SceneSystem *ctx) {}
 
-void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
+void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
   lua_State *lua_ctx = get_lctx(ctx).value();
 
   const ImGuiViewport *viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(viewport->Size);
 
-  ImGui::Begin("Test Lua");
+  ImGui::Begin("Edit Lua/Moonscript Scripts");
 
-  ImGui::InputTextMultiline("Lua Code", buf.data(), TEXT_BUF_SIZE);
+  ImGui::InputTextMultiline("Script", buf.data(), TEXT_BUF_SIZE);
   if (ImGui::Button("ExecuteAsLua")) {
     reset_error_texts();
     int ret = luaL_dostring(lua_ctx, buf.data());
@@ -391,9 +391,9 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   ImGui::End();  // Test Lua
 }
 
-bool TestLuaScene::allow_draw_below(SceneSystem *ctx) { return true; }
+bool ScriptEditScene::allow_draw_below(SceneSystem *ctx) { return true; }
 
-void TestLuaScene::reset(SceneSystem *ctx) {
+void ScriptEditScene::reset(SceneSystem *ctx) {
   exec_state = ExecState::PENDING;
   saveload_state = ExecState::PENDING;
   error_text.clear();
@@ -406,7 +406,7 @@ void TestLuaScene::reset(SceneSystem *ctx) {
   }
 }
 
-std::optional<const char *> TestLuaScene::get_buffer_once() {
+std::optional<const char *> ScriptEditScene::get_buffer_once() {
   if (flags.test(1)) {
     return std::nullopt;
   }
@@ -415,7 +415,7 @@ std::optional<const char *> TestLuaScene::get_buffer_once() {
   return buf.data();
 }
 
-void TestLuaScene::upload_text(const char *text) {
+void ScriptEditScene::upload_text(const char *text) {
   std::ofstream ofs =
       std::ofstream(filename.data(), std::ios_base::out | std::ios_base::trunc);
   if (ofs.good()) {
@@ -430,7 +430,8 @@ void TestLuaScene::upload_text(const char *text) {
   }
 }
 
-std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
+std::optional<std::string> ScriptEditScene::load_from_file(
+    const char *filename) {
   std::ifstream ifs(filename);
   std::string content{};
   std::array<char, 2048> buf;
@@ -465,7 +466,7 @@ std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
   return content;
 }
 
-std::optional<lua_State *> TestLuaScene::get_lctx(SceneSystem *ctx) const {
+std::optional<lua_State *> ScriptEditScene::get_lctx(SceneSystem *ctx) const {
   auto opt_void_ptr = ctx->get_map_value("lua_state");
   if (opt_void_ptr.has_value()) {
     return reinterpret_cast<lua_State *>(opt_void_ptr.value());
@@ -473,7 +474,7 @@ std::optional<lua_State *> TestLuaScene::get_lctx(SceneSystem *ctx) const {
   return std::nullopt;
 }
 
-void TestLuaScene::reset_error_texts() {
+void ScriptEditScene::reset_error_texts() {
   exec_state = ExecState::PENDING;
   saveload_state = ExecState::PENDING;
   error_text.clear();

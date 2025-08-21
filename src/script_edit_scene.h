@@ -14,8 +14,8 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
-#ifndef SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_TEST_LUA_SCENE_H_
-#define SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_TEST_LUA_SCENE_H_
+#ifndef SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_SCRIPT_EDIT_SCENE_H_
+#define SEODISPARATE_COM_JUMPARTIFACT_DEMO_1_SCRIPT_EDIT_SCENE_H_
 
 #include "scene_system.h"
 
@@ -45,10 +45,10 @@ const static char *MOONSCRIPT_HELP_TEXT =
 
 const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
 
-class TestLuaScene : public Scene {
+class ScriptEditScene : public Scene {
  public:
-  TestLuaScene(SceneSystem *ctx);
-  virtual ~TestLuaScene() override;
+  ScriptEditScene(SceneSystem *ctx);
+  virtual ~ScriptEditScene() override;
 
   virtual void update(SceneSystem *ctx, float dt) override;
   virtual void draw(SceneSystem *ctx) override;

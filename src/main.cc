@@ -25,7 +25,6 @@
 
 // Local includes
 #include "scene_system.h"
-#include "test_lua_scene.h"
 
 EM_JS(int, canvas_get_width, (),
       { return document.getElementById("canvas").clientWidth; });

@@ -29,7 +29,7 @@
 #include <print>
 
 // local includes
-#include "test_lua_scene.h"
+#include "script_edit_scene.h"
 
 Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
@@ -144,21 +144,15 @@ void SceneSystem::draw() {
 
     ImGui::EndTabItem();
   }
-  if (ImGui::BeginTabItem("TestLua")) {
+  if (ImGui::BeginTabItem("ScriptEditor")) {
     std::optional<uint32_t> top_id = get_top_scene_id();
     if (!top_id.has_value() || top_id != cached_top_scene_id) {
-      // std::println(
-      //     stdout, "Cached id \"{}\", top_id \"{}\"",
-      //     cached_top_scene_id.has_value()
-      //         ? std::format("{}", cached_top_scene_id.value())
-      //         : "nullopt",
-      //     top_id.has_value() ? std::format("{}", top_id.value()) :
-      //     "nullopt");
       clear_scenes();
-      push_scene(
-          [](SceneSystem *ctx) { return std::make_unique<TestLuaScene>(ctx); });
-      cached_top_scene_id = get_scene_id_by_template<TestLuaScene>();
-      std::println(stdout, "Pushed TestLuaScene.");
+      push_scene([](SceneSystem *ctx) {
+        return std::make_unique<ScriptEditScene>(ctx);
+      });
+      cached_top_scene_id = get_scene_id_by_template<ScriptEditScene>();
+      std::println(stdout, "Pushed ScriptEditScene.");
     }
     ImGui::EndTabItem();
   }
