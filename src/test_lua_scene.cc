@@ -53,11 +53,28 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
     : Scene(ctx),
       buf{},
       error_text(),
-      lua_ctx(luaL_newstate()),
       exec_state(ExecState::PENDING),
       saveload_state(ExecState::PENDING) {
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
   std::strcpy(filename.data(), "/test.lua");
+
+  if (ctx->get_map_value("lua_state").has_value()) {
+    if (ctx->get_flags().test(1)) {
+      size_t idx = std::strlen(buf.data());
+      sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
+    }
+    return;
+  }
+
+  lua_State *lua_ctx = luaL_newstate();
+  bool placed = ctx->set_map_value("lua_state", lua_ctx, [](void *ud) {
+    lua_State *lctx = reinterpret_cast<lua_State *>(ud);
+    lua_close(lctx);
+  });
+  if (!placed) {
+    lua_close(lua_ctx);
+    return;
+  }
 
   EM_ASM(FS.mkdir('/preloaded'););
 
@@ -110,21 +127,23 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   int ret = luaL_dostring(lua_ctx, "require('moonscript')");
   if (ret == 1) {
     lua_pop(lua_ctx, 1);
-    flags.reset(0);
+    ctx->get_flags().reset(1);
   } else {
-    flags.set(0);
+    ctx->get_flags().set(1);
     size_t idx = std::strlen(buf.data());
     sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
   }
 }
 
-TestLuaScene::~TestLuaScene() { lua_close(lua_ctx); }
+TestLuaScene::~TestLuaScene() {}
 
 void TestLuaScene::update(SceneSystem *ctx, float dt) { flags.reset(1); }
 
 void TestLuaScene::draw(SceneSystem *ctx) {}
 
 void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
+  lua_State *lua_ctx = get_lctx(ctx).value();
+
   const ImGuiViewport *viewport = ImGui::GetMainViewport();
   ImGui::SetNextWindowPos(viewport->Pos);
   ImGui::SetNextWindowSize(viewport->Size);
@@ -434,4 +453,12 @@ std::optional<std::string> TestLuaScene::load_from_file(const char *filename) {
   }
 
   return content;
+}
+
+std::optional<lua_State *> TestLuaScene::get_lctx(SceneSystem *ctx) const {
+  auto opt_void_ptr = ctx->get_map_value("lua_state");
+  if (opt_void_ptr.has_value()) {
+    return reinterpret_cast<lua_State *>(opt_void_ptr.value());
+  }
+  return std::nullopt;
 }

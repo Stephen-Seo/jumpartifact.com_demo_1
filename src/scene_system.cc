@@ -189,6 +189,37 @@ std::optional<SceneSystem::SceneType *> SceneSystem::get_top() {
   return &scene_stack.back();
 }
 
+bool SceneSystem::set_map_value(std::string name, void *value,
+                                std::function<void(void *)> cleanup_fn) {
+  if (auto iter = generic_map.find(name); iter != generic_map.end()) {
+    return false;
+  }
+  generic_map.insert(std::make_pair(name, std::make_pair(value, cleanup_fn)));
+  return true;
+}
+
+std::optional<void *> SceneSystem::get_map_value(std::string name) {
+  if (auto iter = generic_map.find(name); iter != generic_map.end()) {
+    return iter->second.first;
+  }
+  return std::nullopt;
+}
+
+bool SceneSystem::clear_map_value(
+    std::string name,
+    std::optional<std::function<void(void *)> > override_cleanup_fn) {
+  if (auto iter = generic_map.find(name); iter != generic_map.end()) {
+    if (override_cleanup_fn.has_value()) {
+      override_cleanup_fn.value()(iter->second.first);
+    } else {
+      iter->second.second(iter->second.first);
+    }
+    generic_map.erase(iter);
+    return true;
+  }
+  return false;
+}
+
 void SceneSystem::handle_actions() {
   while (!queued_actions.empty()) {
     switch (queued_actions.front().type) {

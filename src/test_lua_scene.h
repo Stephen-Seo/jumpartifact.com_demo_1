@@ -81,7 +81,6 @@ class TestLuaScene : public Scene {
   std::string error_text;
   std::string save_error_text;
   std::string save_error_text_err;
-  lua_State *lua_ctx;
   // 0 - moonscript is loaded
   // 1 - buffer fetched once this frame
   std::bitset<32> flags;
@@ -89,6 +88,8 @@ class TestLuaScene : public Scene {
   ExecState saveload_state;
 
   static std::optional<std::string> load_from_file(const char *filename);
+
+  std::optional<lua_State *> get_lctx(SceneSystem *ctx) const;
 };
 
 #endif

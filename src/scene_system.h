@@ -23,6 +23,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <unordered_map>
 
 // Forward declarations.
 class SceneSystem;
@@ -47,6 +48,10 @@ class SceneSystem {
   using SceneType = std::unique_ptr<Scene>;
   using SceneFnType = std::function<SceneType(SceneSystem*)>;
   using OptBuilderType = std::optional<SceneFnType>;
+
+  using MapType =
+      std::unordered_map<std::string,
+                         std::pair<void*, std::function<void(void*)> > >;
 
   using FlagsType = std::bitset<32>;
 
@@ -76,6 +81,13 @@ class SceneSystem {
   const std::deque<SceneType>* get_scene_stack() const;
   std::optional<SceneType*> get_top();
 
+  bool set_map_value(std::string name, void* value,
+                     std::function<void(void*)> cleanup_fn);
+  std::optional<void*> get_map_value(std::string name);
+  bool clear_map_value(
+      std::string name,
+      std::optional<std::function<void(void*)> > override_cleanup_fn);
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -86,9 +98,11 @@ class SceneSystem {
   std::chrono::time_point<std::chrono::steady_clock> time_point;
   std::deque<SceneType> scene_stack;
   std::deque<Action> queued_actions;
+  MapType generic_map;
   std::array<float, 10> dt;
   size_t dt_idx;
   // 0 - is fullscreen
+  // 1 - moonscript loaded
   FlagsType flags;
   // 0 - pop was queued, remains true until pop occurs
   // 1 - small font size
