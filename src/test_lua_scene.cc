@@ -33,6 +33,22 @@ extern "C" {
 #include <fstream>
 
 extern "C" {
+
+int upload_script_to_test_lua(const char *string,
+                              TestLuaScene *test_lua_scene) {
+  if (!string) {
+    return 1;
+  } else if (!test_lua_scene) {
+    std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
+    return 1;
+  }
+
+  test_lua_scene->upload_text(string);
+  std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
+
+  return 0;
+}
+
 int internal_lua_load_buffer(lua_State *ctx) {
   TestLuaScene *scene = reinterpret_cast<TestLuaScene *>(
       lua_touserdata(ctx, lua_upvalueindex(1)));
@@ -47,6 +63,7 @@ int internal_lua_load_buffer(lua_State *ctx) {
 
   return 1;
 }
+
 }  // extern "C"
 
 TestLuaScene::TestLuaScene(SceneSystem *ctx)
