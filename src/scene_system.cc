@@ -34,7 +34,7 @@
 Scene::Scene(SceneSystem *) {}
 Scene::~Scene() {}
 
-uint32_t Scene::get_scene_id(SceneSystem *ctx) {
+std::optional<uint32_t> Scene::get_scene_id(SceneSystem *ctx) {
   return ctx->get_scene_id(this);
 }
 
@@ -44,6 +44,7 @@ SceneSystem::SceneSystem()
       dt_idx(0),
       flags(),
       private_flags(),
+      cached_top_scene_id(std::nullopt),
       scene_type_counter(0) {}
 
 SceneSystem::~SceneSystem() {}
@@ -99,6 +100,13 @@ void SceneSystem::draw() {
   ImGui::Begin("Config Window");
   ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None);
   if (ImGui::BeginTabItem("Settings")) {
+    std::optional<uint32_t> top_id = get_top_scene_id();
+    if (top_id.has_value()) {
+      clear_scenes();
+      std::println(stdout, "Cleared Scenes.");
+      cached_top_scene_id = std::nullopt;
+    }
+
     bool is_fullscreen = flags.test(0);
     ImGui::Checkbox("Fullscreen Enabled", &is_fullscreen);
     if (is_fullscreen != flags.test(0)) {
@@ -127,17 +135,6 @@ void SceneSystem::draw() {
       private_flags.flip(3);
     }
 
-    if (ImGui::Button("Clear Scenes")) {
-      clear_scenes();
-      std::println(stdout, "Cleared Scenes.");
-    }
-
-    if (ImGui::Button("Push \"Lua Test\" Scene")) {
-      clear_scenes();
-      push_scene(
-          [](SceneSystem *ctx) { return std::make_unique<TestLuaScene>(ctx); });
-    }
-
     float avg = 0.0F;
     for (int idx = 0; idx < dt.size(); ++idx) {
       avg += dt[idx];
@@ -145,6 +142,24 @@ void SceneSystem::draw() {
     avg /= static_cast<float>(dt.size());
     ImGui::Text("Current FPS is: %0.1f", 1.0F / avg);
 
+    ImGui::EndTabItem();
+  }
+  if (ImGui::BeginTabItem("TestLua")) {
+    std::optional<uint32_t> top_id = get_top_scene_id();
+    if (!top_id.has_value() || top_id != cached_top_scene_id) {
+      // std::println(
+      //     stdout, "Cached id \"{}\", top_id \"{}\"",
+      //     cached_top_scene_id.has_value()
+      //         ? std::format("{}", cached_top_scene_id.value())
+      //         : "nullopt",
+      //     top_id.has_value() ? std::format("{}", top_id.value()) :
+      //     "nullopt");
+      clear_scenes();
+      push_scene(
+          [](SceneSystem *ctx) { return std::make_unique<TestLuaScene>(ctx); });
+      cached_top_scene_id = get_scene_id_by_template<TestLuaScene>();
+      std::println(stdout, "Pushed TestLuaScene.");
+    }
     ImGui::EndTabItem();
   }
   ImGui::EndTabBar();
@@ -225,10 +240,14 @@ bool SceneSystem::clear_map_value(
   return false;
 }
 
-uint32_t SceneSystem::get_scene_id(Scene *scene) {
-  if (auto iter = scene_type_map.find(typeid(scene).name());
-      iter != scene_type_map.end()) {
-    return iter->second;
+std::optional<uint32_t> SceneSystem::get_scene_id(Scene *scene) {
+  if (scene != nullptr) {
+    if (auto iter = scene_type_map.find(typeid(*scene).name());
+        iter != scene_type_map.end()) {
+      return iter->second;
+    }
+  } else {
+    return std::nullopt;
   }
 
   scene_type_map.insert(
