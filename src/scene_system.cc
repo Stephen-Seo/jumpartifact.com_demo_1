@@ -127,7 +127,7 @@ void SceneSystem::draw() {
       std::println(stdout, "Cleared Scenes.");
     }
 
-    if (ImGui::Button("Push \"Lua Test\" Screen")) {
+    if (ImGui::Button("Push \"Lua Test\" Scene")) {
       clear_scenes();
       push_scene(
           [](SceneSystem *ctx) { return std::make_unique<TestLuaScene>(ctx); });
