@@ -55,7 +55,7 @@ class TestLuaScene : public Scene {
   virtual void draw_rlimgui(SceneSystem *ctx) override;
   virtual bool allow_draw_below(SceneSystem *ctx) override;
 
-  void reset();
+  void reset(SceneSystem *ctx);
 
   std::optional<const char *> get_buffer_once();
   void upload_text(const char *);
@@ -81,7 +81,7 @@ class TestLuaScene : public Scene {
   std::string error_text;
   std::string save_error_text;
   std::string save_error_text_err;
-  // 0 - moonscript is loaded
+  // 0 - UNUSED
   // 1 - buffer fetched once this frame
   std::bitset<32> flags;
   ExecState exec_state;

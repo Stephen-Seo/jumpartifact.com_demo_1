@@ -194,7 +194,7 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
   }
   ImGui::SameLine();
   if (ImGui::Button("Reset")) {
-    reset();
+    reset(ctx);
     reset_error_texts();
   }
   switch (exec_state) {
@@ -383,14 +383,14 @@ void TestLuaScene::draw_rlimgui(SceneSystem *ctx) {
 
 bool TestLuaScene::allow_draw_below(SceneSystem *ctx) { return true; }
 
-void TestLuaScene::reset() {
+void TestLuaScene::reset(SceneSystem *ctx) {
   exec_state = ExecState::PENDING;
   saveload_state = ExecState::PENDING;
   error_text.clear();
   save_error_text.clear();
   save_error_text_err.clear();
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
-  if (flags.test(0)) {
+  if (ctx->get_flags().test(1)) {
     size_t idx = std::strlen(buf.data());
     sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
   }
