@@ -42,21 +42,6 @@ EM_BOOL resize_event_callback(int event_type, const EmscriptenUiEvent *event,
   return false;
 }
 
-int upload_script_to_test_lua(const char *string,
-                              TestLuaScene *test_lua_scene) {
-  if (!string) {
-    return 1;
-  } else if (!test_lua_scene) {
-    std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
-    return 1;
-  }
-
-  test_lua_scene->upload_text(string);
-  std::free(reinterpret_cast<void *>(const_cast<char *>(string)));
-
-  return 0;
-}
-
 }  // extern "C"
 
 bool handle_fullscreen_event(int type,

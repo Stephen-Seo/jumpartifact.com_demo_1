@@ -19,6 +19,7 @@
 
 #include <bitset>
 #include <chrono>
+#include <cstdint>
 #include <deque>
 #include <functional>
 #include <memory>
@@ -39,6 +40,8 @@ class Scene {
 
   // Return true to ALLOW drawing lower scenes on stack.
   virtual bool allow_draw_below(SceneSystem* ctx) = 0;
+
+  std::optional<uint32_t> get_scene_id(SceneSystem* ctx);
 
  private:
 };
@@ -88,6 +91,13 @@ class SceneSystem {
       std::string name,
       std::optional<std::function<void(void*)> > override_cleanup_fn);
 
+  std::optional<uint32_t> get_scene_id(Scene*);
+
+  template <typename SceneTypeT>
+  uint32_t get_scene_id_by_template();
+
+  std::optional<uint32_t> get_top_scene_id();
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -109,8 +119,23 @@ class SceneSystem {
   // 2 - toggle font size
   // 3 - demo window open
   std::bitset<32> private_flags;
+  std::unordered_map<std::string, uint32_t> scene_type_map;
+  std::optional<uint32_t> cached_top_scene_id;
+  uint32_t scene_type_counter;
 
   void handle_actions();
 };
+
+template <typename SceneTypeT>
+uint32_t SceneSystem::get_scene_id_by_template() {
+  if (auto iter = scene_type_map.find(typeid(SceneTypeT).name());
+      iter != scene_type_map.end()) {
+    return iter->second;
+  }
+
+  scene_type_map.insert(
+      std::make_pair(typeid(SceneTypeT).name(), scene_type_counter++));
+  return scene_type_counter - 1;
+}
 
 #endif
