@@ -59,6 +59,8 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
   std::strcpy(filename.data(), "/test.lua");
 
+  EM_ASM(FS.mkdir('/preloaded'););
+
   luaL_requiref(lua_ctx, LUA_GNAME, luaopen_base, 1);           // +1
   lua_pop(lua_ctx, 1);                                          // -1
   luaL_requiref(lua_ctx, LUA_LOADLIBNAME, luaopen_package, 1);  // +1
@@ -83,11 +85,12 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   // Put "assets_embed/?/init.lua" to "package.path"
   lua_getglobal(lua_ctx, "package");  // +1
   lua_pushstring(lua_ctx, "path");    // +1
-  lua_pushstring(
-      lua_ctx,
-      "/?/init.lua;/?.lua;assets_embed/?/init.lua;assets_embed/?.lua");  // +1
-  lua_settable(lua_ctx, -3);                                             // -2
-  lua_pop(lua_ctx, 1);                                                   // -1
+  lua_pushstring(lua_ctx,
+                 "/preloaded/?/init.lua;/preloaded/?.lua;"
+                 "/assets_embed/?/init.lua;/assets_embed/?.lua;"
+                 "/?/init.lua;/?.lua");  // +1
+  lua_settable(lua_ctx, -3);             // -2
+  lua_pop(lua_ctx, 1);                   // -1
 
   //// Put "assets_embed/?.so" to "package.cpath"
   // lua_getglobal(lua_ctx, "package");             // +1
@@ -99,7 +102,7 @@ TestLuaScene::TestLuaScene(SceneSystem *ctx)
   lua_pushcfunction(lua_ctx, luaopen_lpeg);       // +1
   lua_setglobal(lua_ctx, "luaopen_lpeg_global");  // -1
 
-  std::ofstream lua_lpeg_of("/lpeg.lua",
+  std::ofstream lua_lpeg_of("/preloaded/lpeg.lua",
                             std::ios_base::out | std::ios_base::trunc);
   lua_lpeg_of << LUA_LPEG_LOAD_SCRIPT;
   lua_lpeg_of.close();
