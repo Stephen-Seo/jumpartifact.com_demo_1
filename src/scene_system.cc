@@ -29,6 +29,7 @@
 #include <print>
 
 // local includes
+#include "2d_world_scene.h"
 #include "script_edit_scene.h"
 
 Scene::Scene(SceneSystem *) {}
@@ -44,7 +45,6 @@ SceneSystem::SceneSystem()
       dt_idx(0),
       flags(),
       private_flags(),
-      cached_top_scene_id(std::nullopt),
       scene_type_counter(0) {}
 
 SceneSystem::~SceneSystem() {}
@@ -104,7 +104,6 @@ void SceneSystem::draw() {
     if (top_id.has_value()) {
       clear_scenes();
       std::println(stdout, "Cleared Scenes.");
-      cached_top_scene_id = std::nullopt;
     }
 
     bool is_fullscreen = flags.test(0);
@@ -146,13 +145,25 @@ void SceneSystem::draw() {
   }
   if (ImGui::BeginTabItem("ScriptEditor")) {
     std::optional<uint32_t> top_id = get_top_scene_id();
-    if (!top_id.has_value() || top_id != cached_top_scene_id) {
+    if (!top_id.has_value() ||
+        top_id != get_scene_id_by_template<ScriptEditScene>()) {
       clear_scenes();
       push_scene([](SceneSystem *ctx) {
         return std::make_unique<ScriptEditScene>(ctx);
       });
-      cached_top_scene_id = get_scene_id_by_template<ScriptEditScene>();
       std::println(stdout, "Pushed ScriptEditScene.");
+    }
+    ImGui::EndTabItem();
+  }
+  if (ImGui::BeginTabItem("2DSimulation")) {
+    std::optional<uint32_t> top_id = get_top_scene_id();
+    if (!top_id.has_value() ||
+        top_id != get_scene_id_by_template<TwoDimWorldScene>()) {
+      clear_scenes();
+      push_scene([](SceneSystem *ctx) {
+        return std::make_unique<TwoDimWorldScene>(ctx);
+      });
+      std::println(stdout, "Pushed 2DWorldScene.");
     }
     ImGui::EndTabItem();
   }
