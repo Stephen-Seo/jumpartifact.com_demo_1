@@ -109,6 +109,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 
   b2Polygon wall_box = b2MakeBox(WALL_HW, WALL_HH);
   b2ShapeDef wall_shape_def = b2DefaultShapeDef();
+  wall_shape_def.material.restitution = 0.8F;
   b2CreatePolygonShape(this->left_wall_id, &wall_shape_def, &wall_box);
 
   wall_body_def = b2DefaultBodyDef();
@@ -117,6 +118,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 
   wall_box = b2MakeBox(WALL_HW, WALL_HH);
   wall_shape_def = b2DefaultShapeDef();
+  wall_shape_def.material.restitution = 0.8F;
   b2CreatePolygonShape(this->right_wall_id, &wall_shape_def, &wall_box);
 
   // Create dynamic body
