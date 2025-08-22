@@ -55,17 +55,17 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx) : Scene(ctx) {
   b2CreatePolygonShape(this->right_wall_id, &wall_shape_def, &wall_box);
 
   // Create dynamic body
-  b2BodyDef wheel_body = b2DefaultBodyDef();
-  wheel_body.type = b2_dynamicBody;
-  wheel_body.position = b2Vec2{2.0F, 0.0F};
-  wheel_body.linearVelocity.x = -3.0F;
-  this->wheel_id = b2CreateBody(this->world_id, &wheel_body);
+  b2BodyDef ball_body = b2DefaultBodyDef();
+  ball_body.type = b2_dynamicBody;
+  ball_body.position = b2Vec2{2.0F, 0.0F};
+  ball_body.linearVelocity.x = -3.0F;
+  this->ball_id = b2CreateBody(this->world_id, &ball_body);
 
-  b2Circle circle{b2Vec2{0.0F, 0.0F}, WHEEL_R};
-  b2ShapeDef wheel_shape_def = b2DefaultShapeDef();
-  wheel_shape_def.density = 1.0F;
-  wheel_shape_def.material.friction = 0.3F;
-  b2CreateCircleShape(this->wheel_id, &wheel_shape_def, &circle);
+  b2Circle circle{b2Vec2{0.0F, 0.0F}, BALL_R};
+  b2ShapeDef ball_shape_def = b2DefaultShapeDef();
+  ball_shape_def.density = 1.0F;
+  ball_shape_def.material.friction = 0.3F;
+  b2CreateCircleShape(this->ball_id, &ball_shape_def, &circle);
 }
 
 TwoDimWorldScene::~TwoDimWorldScene() { b2DestroyWorld(this->world_id); }
@@ -91,10 +91,10 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
                 PIXEL_B2UNIT_RATIO * WALL_HW * 2.0F,
                 PIXEL_B2UNIT_RATIO * WALL_HH * 2.0F, BROWN);
 
-  // Draw wheel
-  b2Vec2 wheel_pos = b2Body_GetPosition(wheel_id);
-  DrawCircle(wheel_pos.x * PIXEL_B2UNIT_RATIO, wheel_pos.y * PIXEL_B2UNIT_RATIO,
-             WHEEL_R * PIXEL_B2UNIT_RATIO, RED);
+  // Draw ball
+  b2Vec2 ball_pos = b2Body_GetPosition(ball_id);
+  DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y * PIXEL_B2UNIT_RATIO,
+             BALL_R * PIXEL_B2UNIT_RATIO, RED);
 }
 
 void TwoDimWorldScene::draw_rlimgui(SceneSystem *ctx) {}

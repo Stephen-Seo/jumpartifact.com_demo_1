@@ -37,7 +37,7 @@ constexpr float RWALL_Y = 1.5F;
 constexpr float WALL_HW = 0.1F;
 constexpr float WALL_HH = 1.5F;
 
-constexpr float WHEEL_R = 0.1F;
+constexpr float BALL_R = 0.1F;
 
 class TwoDimWorldScene : public Scene {
  public:
@@ -54,7 +54,7 @@ class TwoDimWorldScene : public Scene {
   b2BodyId ground_id;
   b2BodyId left_wall_id;
   b2BodyId right_wall_id;
-  b2BodyId wheel_id;
+  b2BodyId ball_id;
 };
 
 #endif
