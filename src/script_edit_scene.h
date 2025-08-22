@@ -34,16 +34,29 @@ constexpr int FILENAME_BUF_SIZE = 1024;
 
 const static char *LUA_DEFAULT_TEXT =
     "-- Input Lua code here.\n"
-    "-- basic, coroutine, package, string manip., utf-8, table manip.,\n"
-    "-- math, io, os, and debug modules are available\n";
+    "-- All Lua modules are available\n";
 
-const static char *MOONSCRIPT_HELP_TEXT =
-    "-- moonscript is loaded.\n"
-    "-- This means you can save a \"test.moon\",\n"
-    "-- and executing it will run as moonscript.\n"
-    "-- Also try require('test') for \"test.moon\".\n";
+const static char *MOONSCRIPT_HELP_TEXT = "-- Moonscript is loaded.\n";
 
-const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
+const static char *DEFAULT_BALL_SCENE_SCRIPT =
+    "scene_ball.elapsed = 0.0\n"
+    "scene_ball.update = (dt) ->\n"
+    "  scene_ball.elapsed += dt\n"
+    "  bx, by = scene_ball.getballpos!\n"
+    "  if by > 10.0\n"
+    "    scene_ball.setballpos 2, 0\n"
+    "  if scene_ball.elapsed > 1.5\n"
+    "    scene_ball.elapsed = 0.0\n"
+    "    if math.random! > 0.33\n"
+    "      random_x = math.random!\n"
+    "      if bx > 2.0\n"
+    "        random_x = -random_x\n"
+    "      random_y = -math.random! * 0.1\n"
+    "      ret = scene_ball.applyballimpulse random_x, random_y\n"
+    "      if ret\n"
+    "        print \"Applied impulse of \" .. random_x .. \", \" .. random_y\n"
+    "      else\n"
+    "        print \"Failed to apply impulse\"\n";
 
 class ScriptEditScene : public Scene {
  public:

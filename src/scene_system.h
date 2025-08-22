@@ -98,6 +98,8 @@ class SceneSystem {
 
   std::optional<uint32_t> get_top_scene_id();
 
+  void init_lua();
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {
@@ -120,7 +122,6 @@ class SceneSystem {
   // 3 - demo window open
   std::bitset<32> private_flags;
   std::unordered_map<std::string, uint32_t> scene_type_map;
-  std::optional<uint32_t> cached_top_scene_id;
   uint32_t scene_type_counter;
 
   void handle_actions();
