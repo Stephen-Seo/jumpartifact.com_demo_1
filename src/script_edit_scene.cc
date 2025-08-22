@@ -80,9 +80,12 @@ ScriptEditScene::ScriptEditScene(SceneSystem *ctx)
   if (ctx->get_map_value("lua_state").has_value()) {
     if (ctx->get_flags().test(1)) {
       size_t idx = std::strlen(buf.data());
-      sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
+      sprintf(buf.data() + idx, "%s", MOONSCRIPT_HELP_TEXT);
     }
   }
+
+  sprintf(buf.data() + std::strlen(buf.data()), "%s\n",
+          DEFAULT_BALL_SCENE_SCRIPT);
 }
 
 ScriptEditScene::~ScriptEditScene() {}
@@ -126,8 +129,13 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
     std::string exec_str = std::format(
         "moonscript = require('moonscript.base')\n"
         "moon_string = EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN()\n"
-        "to_call = moonscript.loadstring(moon_string)\n"
-        "to_call()");
+        "local to_call, error_obj = moonscript.loadstring(moon_string)\n"
+        "if error_obj ~= nil then\n"
+        "print(error_obj)\n"
+        "error(error_obj)\n"
+        "else\n"
+        "to_call()\n"
+        "end\n");
 
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
@@ -154,7 +162,7 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
       ImGui::Text("Script run Success!");
       break;
     case ExecState::GENERIC_FAILURE:
-      ImGui::Text("Script run failure! %s", error_text.c_str());
+      ImGui::TextWrapped("Script run failure! %s", error_text.c_str());
       break;
     default:
       // Intentionally left blank
@@ -212,8 +220,13 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
     reset_error_texts();
     std::string exec_str = std::format(
         "moonscript = require('moonscript.base')\n"
-        "to_call = moonscript.loadfile('{}')\n"
-        "to_call()",
+        "local to_call, error_obj = moonscript.loadfile('{}')\n"
+        "if error_obj ~= nil then\n"
+        "print(error_obj)\n"
+        "error(error_obj)\n"
+        "else\n"
+        "to_call()\n"
+        "end\n",
         filename.data());
     int ret = luaL_dostring(lua_ctx, exec_str.c_str());
     if (ret == 1) {
@@ -327,7 +340,8 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
       // intentionally left blank
       break;
   }
-  ImGui::Text("%s\n%s", save_error_text.c_str(), save_error_text_err.c_str());
+  ImGui::TextWrapped("%s\n%s", save_error_text.c_str(),
+                     save_error_text_err.c_str());
   ImGui::End();  // Test Lua
 }
 

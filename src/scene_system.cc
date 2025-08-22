@@ -171,6 +171,18 @@ void SceneSystem::draw() {
       });
       std::println(stdout, "Pushed 2DWorldScene.");
     }
+
+    ImGui::TextWrapped("scene_ball is a global table in 2DSimulation.");
+    ImGui::TextWrapped(
+        "Create an update function \"scene_ball.update\" that accepts "
+        "one number parameter delta-time.");
+    ImGui::TextWrapped("\nAvailable functions:");
+    ImGui::TextWrapped("  scene_ball.getballpos() -> number, number");
+    ImGui::TextWrapped("  scene_ball.setballpos(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_ball.getballvel() -> number, number");
+    ImGui::TextWrapped(
+        "  scene_ball.applyballimpulse(number, number) -> boolean");
+
     ImGui::EndTabItem();
   }
   ImGui::EndTabBar();
@@ -325,6 +337,9 @@ void SceneSystem::init_lua() {
                             std::ios_base::out | std::ios_base::trunc);
   lua_lpeg_of << "return luaopen_lpeg_global()";
   lua_lpeg_of.close();
+
+  lua_newtable(lua_ctx);                 // +1
+  lua_setglobal(lua_ctx, "scene_ball");  // -1
 
   int ret = luaL_dostring(lua_ctx, "require('moonscript')");
   if (ret == 1) {

@@ -22,6 +22,9 @@
 // third party includes
 #include <box2d/box2d.h>
 
+// standard library includes
+#include <string>
+
 constexpr float PIXEL_B2UNIT_RATIO = 200.0F;
 
 constexpr float GROUND_X = 2.0F;
@@ -49,7 +52,13 @@ class TwoDimWorldScene : public Scene {
   virtual void draw_rlimgui(SceneSystem *ctx) override;
   virtual bool allow_draw_below(SceneSystem *ctx) override;
 
+  b2Vec2 get_ball_pos() const;
+  void set_ball_pos(float x, float y);
+  b2Vec2 get_ball_vel() const;
+  void apply_ball_impulse(float x, float y);
+
  private:
+  std::string lua_error_text;
   b2WorldId world_id;
   b2BodyId ground_id;
   b2BodyId left_wall_id;
