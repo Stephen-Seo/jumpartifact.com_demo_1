@@ -43,8 +43,6 @@ const static char *MOONSCRIPT_HELP_TEXT =
     "-- and executing it will run as moonscript.\n"
     "-- Also try require('test') for \"test.moon\".\n";
 
-const static char *LUA_LPEG_LOAD_SCRIPT = "return luaopen_lpeg_global()";
-
 class ScriptEditScene : public Scene {
  public:
   ScriptEditScene(SceneSystem *ctx);

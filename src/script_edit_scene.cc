@@ -20,10 +20,8 @@
 #include <imgui.h>
 extern "C" {
 #include <lauxlib.h>
-#include <lualib.h>
 }
 #include <emscripten.h>
-#include <lpeg_exported.h>
 #include <rlImGui.h>
 
 // standard library includes
@@ -75,73 +73,15 @@ ScriptEditScene::ScriptEditScene(SceneSystem *ctx)
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
   std::strcpy(filename.data(), "/test.lua");
 
+  if (!ctx->get_map_value("lua_state").has_value()) {
+    ctx->init_lua();
+  }
+
   if (ctx->get_map_value("lua_state").has_value()) {
     if (ctx->get_flags().test(1)) {
       size_t idx = std::strlen(buf.data());
       sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
     }
-    return;
-  }
-
-  lua_State *lua_ctx = luaL_newstate();
-  bool placed = ctx->set_map_value("lua_state", lua_ctx, [](void *ud) {
-    lua_State *lctx = reinterpret_cast<lua_State *>(ud);
-    lua_close(lctx);
-  });
-  if (!placed) {
-    lua_close(lua_ctx);
-    return;
-  }
-
-  EM_ASM(FS.mkdir('/preloaded'););
-
-  luaL_requiref(lua_ctx, LUA_GNAME, luaopen_base, 1);           // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_LOADLIBNAME, luaopen_package, 1);  // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_COLIBNAME, luaopen_coroutine, 1);  // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_STRLIBNAME, luaopen_string, 1);    // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_UTF8LIBNAME, luaopen_utf8, 1);     // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_TABLIBNAME, luaopen_table, 1);     // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_MATHLIBNAME, luaopen_math, 1);     // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_IOLIBNAME, luaopen_io, 1);         // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_OSLIBNAME, luaopen_os, 1);         // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-  luaL_requiref(lua_ctx, LUA_DBLIBNAME, luaopen_debug, 1);      // +1
-  lua_pop(lua_ctx, 1);                                          // -1
-
-  // Set "package.path"
-  lua_getglobal(lua_ctx, "package");  // +1
-  lua_pushstring(lua_ctx, "path");    // +1
-  lua_pushstring(lua_ctx,
-                 "/preloaded/?/init.lua;/preloaded/?.lua;"
-                 "/assets_embed/?/init.lua;/assets_embed/?.lua;"
-                 "/?/init.lua;/?.lua");  // +1
-  lua_settable(lua_ctx, -3);             // -2
-  lua_pop(lua_ctx, 1);                   // -1
-
-  lua_pushcfunction(lua_ctx, luaopen_lpeg);       // +1
-  lua_setglobal(lua_ctx, "luaopen_lpeg_global");  // -1
-
-  std::ofstream lua_lpeg_of("/preloaded/lpeg.lua",
-                            std::ios_base::out | std::ios_base::trunc);
-  lua_lpeg_of << LUA_LPEG_LOAD_SCRIPT;
-  lua_lpeg_of.close();
-
-  int ret = luaL_dostring(lua_ctx, "require('moonscript')");
-  if (ret == 1) {
-    lua_pop(lua_ctx, 1);
-    ctx->get_flags().reset(1);
-  } else {
-    ctx->get_flags().set(1);
-    size_t idx = std::strlen(buf.data());
-    sprintf(buf.data() + idx, "%s\n", MOONSCRIPT_HELP_TEXT);
   }
 }
 

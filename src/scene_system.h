@@ -98,6 +98,8 @@ class SceneSystem {
 
   std::optional<uint32_t> get_top_scene_id();
 
+  void init_lua();
+
  private:
   enum class ActionType { CLEAR, PUSH, POP };
   struct Action {

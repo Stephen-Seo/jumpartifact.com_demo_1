@@ -20,6 +20,10 @@
 #include <raylib.h>
 
 TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx) : Scene(ctx) {
+  if (!ctx->get_map_value("lua_state").has_value()) {
+    ctx->init_lua();
+  }
+
   // Create Box2D World
   b2WorldDef world_def = b2DefaultWorldDef();
 

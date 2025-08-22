@@ -17,6 +17,11 @@
 #include "scene_system.h"
 
 // third party includes
+extern "C" {
+#include <lauxlib.h>
+#include <lualib.h>
+}
+#include <lpeg_exported.h>
 #ifndef NDEBUG
 #include <emscripten/console.h>
 #endif
@@ -26,6 +31,7 @@
 #include <rlImGui.h>
 
 // standard library includes
+#include <fstream>
 #include <print>
 
 // local includes
@@ -266,6 +272,67 @@ std::optional<uint32_t> SceneSystem::get_top_scene_id() {
   }
 
   return get_scene_id(scene_stack.back().get());
+}
+
+void SceneSystem::init_lua() {
+  if (get_map_value("lua_state").has_value()) {
+    return;
+  }
+
+  lua_State *lua_ctx = luaL_newstate();
+  set_map_value("lua_state", lua_ctx, [](void *ud) {
+    lua_State *lctx = reinterpret_cast<lua_State *>(ud);
+    lua_close(lctx);
+  });
+
+  EM_ASM(FS.mkdir('/preloaded'););
+
+  luaL_requiref(lua_ctx, LUA_GNAME, luaopen_base, 1);           // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_LOADLIBNAME, luaopen_package, 1);  // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_COLIBNAME, luaopen_coroutine, 1);  // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_STRLIBNAME, luaopen_string, 1);    // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_UTF8LIBNAME, luaopen_utf8, 1);     // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_TABLIBNAME, luaopen_table, 1);     // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_MATHLIBNAME, luaopen_math, 1);     // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_IOLIBNAME, luaopen_io, 1);         // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_OSLIBNAME, luaopen_os, 1);         // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+  luaL_requiref(lua_ctx, LUA_DBLIBNAME, luaopen_debug, 1);      // +1
+  lua_pop(lua_ctx, 1);                                          // -1
+
+  // Set "package.path"
+  lua_getglobal(lua_ctx, "package");  // +1
+  lua_pushstring(lua_ctx, "path");    // +1
+  lua_pushstring(lua_ctx,
+                 "/preloaded/?/init.lua;/preloaded/?.lua;"
+                 "/assets_embed/?/init.lua;/assets_embed/?.lua;"
+                 "/?/init.lua;/?.lua");  // +1
+  lua_settable(lua_ctx, -3);             // -2
+  lua_pop(lua_ctx, 1);                   // -1
+
+  lua_pushcfunction(lua_ctx, luaopen_lpeg);       // +1
+  lua_setglobal(lua_ctx, "luaopen_lpeg_global");  // -1
+
+  std::ofstream lua_lpeg_of("/preloaded/lpeg.lua",
+                            std::ios_base::out | std::ios_base::trunc);
+  lua_lpeg_of << "return luaopen_lpeg_global()";
+  lua_lpeg_of.close();
+
+  int ret = luaL_dostring(lua_ctx, "require('moonscript')");
+  if (ret == 1) {
+    lua_pop(lua_ctx, 1);
+    flags.reset(1);
+  } else {
+    flags.set(1);
+  }
 }
 
 void SceneSystem::handle_actions() {
