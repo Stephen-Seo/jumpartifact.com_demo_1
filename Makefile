@@ -32,6 +32,9 @@ MOONSCRIPT_VER_NUM := $(subst v0,0,${MOONSCRIPT_VERSION_TAG})
 MOONSCRIPT_DL_LINK ?= https://github.com/leafo/moonscript/archive/refs/tags/${MOONSCRIPT_VERSION_TAG}.tar.gz
 MOONSCRIPT_TAR_SHA256SUM ?= 1adb5bb38f9c6f306250f6e90d92796fe100408ee062ac0d14f3c4c22c92e682
 
+BOX2D_VERSION_TAG ?= v3.1.1
+BOX2D_REPO_PATH ?= https://github.com/erincatto/box2d.git
+
 SOURCES != find src -regex '.*\.cc$$'
 HEADERS != find src -regex '.*\.h$$'
 
@@ -40,7 +43,7 @@ OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
 
 all: dist/index.html
 
-dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a assets_embed/moonscript
+dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a assets_embed/moonscript third_party/box2d_out/lib/libbox2d.a
 	@mkdir -p dist
 	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
@@ -49,6 +52,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		third_party/rlImGui_out/rlImGui.cpp.o \
 		-Lthird_party/lua_out/lib -llua \
 		-Lthird_party/lpeg_out/lib -llpeg \
+		-Lthird_party/box2d_out/lib -lbox2d \
 		--embed-file assets_embed \
 		--shell-file custom_shell.html \
 		-sEXPORTED_FUNCTIONS=_main,_upload_script_to_test_lua \
@@ -157,6 +161,14 @@ assets_embed/moonscript: third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz
 	cp -r /tmp/${USER}_JADEMO1_TEMP/moonscript-${MOONSCRIPT_VER_NUM}/moonscript ./assets_embed/
 	rm -rf /tmp/${USER}_JADEMO1_TEMP/
 
+third_party/box2d_git:
+	cd third_party && git clone ${BOX2D_REPO_PATH} box2d_git && cd box2d_git && git checkout ${BOX2D_VERSION_TAG}
+
+third_party/box2d_out/lib/libbox2d.a: third_party/box2d_git third_party/emsdk_git/emsdk_env.sh
+	cd third_party/box2d_git && git clean -xfd && git restore .
+	cd third_party/box2d_git && source ${EMSDK_SHELL} && emcmake cmake -S . -B BUILD -DBOX2D_VALIDATE=Off -DBOX2D_UNIT_TESTS=Off -DBOX2D_SAMPLES=Off -DCMAKE_BUILD_TYPE=Release && ${MAKE} -C BUILD
+	install -D -m644 third_party/box2d_git/BUILD/src/libbox2d.a third_party/box2d_out/lib/libbox2d.a
+
 .PHONY: clean update format
 
 clean:
@@ -171,6 +183,8 @@ clean:
 	rm -rf third_party/lpeg_out
 	rm -rf third_party/lpeg-1.1.0
 	rm -rf assets_embed/moonscript
+	rm -rf third_party/box2d_out
+	(cd third_party/box2d_git && git clean -xfd && git restore .) || /usr/bin/true
 
 update:
 	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git
@@ -182,6 +196,8 @@ update:
 	cd third_party/imgui_git && git fetch && git checkout "${IMGUI_VERSION_TAG}"
 	test -d ./third_party/rlImGui_git || git clone ${RLIMGUI_REPO_PATH} ./third_party/rlImGui_git
 	cd third_party/rlImGui_git && git fetch && git checkout "${RLIMGUI_COMMIT}"
+	test -d third_party/box2d_git || git clone ${BOX2D_REPO_PATH} third_party/box2d_git
+	cd third_party/box2d_git && git fetch && git clean -xfd && git restore . && git checkout "${BOX2D_VERSION_TAG}"
 
 format:
 	test -x /usr/bin/clang-format && clang-format -i --style=Google ${SOURCES} ${HEADERS} || /usr/bin/true
