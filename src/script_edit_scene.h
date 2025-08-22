@@ -51,7 +51,7 @@ const static char *DEFAULT_BALL_SCENE_SCRIPT =
     "      random_x = math.random!\n"
     "      if bx > 2.0\n"
     "        random_x = -random_x\n"
-    "      random_y = -math.random! * 0.1\n"
+    "      random_y = -math.random! * 0.2\n"
     "      ret = scene_ball.applyballimpulse random_x, random_y\n"
     "      if ret\n"
     "        print \"Applied impulse of \" .. random_x .. \", \" .. random_y\n"
