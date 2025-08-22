@@ -100,6 +100,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 
   b2Polygon ground_box = b2MakeBox(GROUND_HW, GROUND_HH);
   b2ShapeDef ground_shape_def = b2DefaultShapeDef();
+  ground_shape_def.material.restitution = 0.3F;
   b2CreatePolygonShape(this->ground_id, &ground_shape_def, &ground_box);
 
   // Create Box2D Walls
