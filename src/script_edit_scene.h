@@ -53,8 +53,10 @@ const static char *DEFAULT_BALL_SCENE_SCRIPT =
     "        random_x = -random_x\n"
     "      random_y = -math.random! * 0.3\n"
     "      ret = scene_ball.applyballimpulse random_x, random_y\n"
+    "      rx = math.floor(random_x * 100.0 + 0.5) / 100.0\n"
+    "      ry = math.floor(random_y * 100.0 + 0.5) / 100.0\n"
     "      if ret\n"
-    "        print \"Applied impulse of \" .. random_x .. \", \" .. random_y\n"
+    "        print \"Applied impulse of \" .. rx .. \", \" .. ry\n"
     "      else\n"
     "        print \"Failed to apply impulse\"\n";
 
