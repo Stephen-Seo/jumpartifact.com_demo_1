@@ -127,8 +127,8 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
     lua_setglobal(lua_ctx, "EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN");  // -1
 
     std::string exec_str = std::format(
-        "moonscript = require('moonscript.base')\n"
-        "moon_string = EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN()\n"
+        "local moonscript = require('moonscript.base')\n"
+        "local moon_string = EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN()\n"
         "local to_call, error_obj = moonscript.loadstring(moon_string)\n"
         "if error_obj ~= nil then\n"
         "print(error_obj)\n"
@@ -149,6 +149,9 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
     } else {
       exec_state = ExecState::GENERIC_SUCCESS;
     }
+
+    lua_pushnil(lua_ctx);                                          // +1
+    lua_setglobal(lua_ctx, "EXECUTE_AS_MOONSCRIPT_FETCH_BUF_FN");  // -1
   }
   ImGui::SameLine();
   if (ImGui::Button("Reset")) {
@@ -219,7 +222,7 @@ void ScriptEditScene::draw_rlimgui(SceneSystem *ctx) {
   if (ImGui::Button("ExecMoonscriptFile")) {
     reset_error_texts();
     std::string exec_str = std::format(
-        "moonscript = require('moonscript.base')\n"
+        "local moonscript = require('moonscript.base')\n"
         "local to_call, error_obj = moonscript.loadfile('{}')\n"
         "if error_obj ~= nil then\n"
         "print(error_obj)\n"

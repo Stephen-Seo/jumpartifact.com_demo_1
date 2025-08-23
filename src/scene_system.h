@@ -120,6 +120,7 @@ class SceneSystem {
   // 1 - small font size
   // 2 - toggle font size
   // 3 - demo window open
+  // 4 - Init window size set
   std::bitset<32> private_flags;
   std::unordered_map<std::string, uint32_t> scene_type_map;
   uint32_t scene_type_counter;

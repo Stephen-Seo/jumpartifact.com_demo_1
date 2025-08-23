@@ -51,7 +51,9 @@ SceneSystem::SceneSystem()
       dt_idx(0),
       flags(),
       private_flags(),
-      scene_type_counter(0) {}
+      scene_type_counter(0) {
+  init_lua();
+}
 
 SceneSystem::~SceneSystem() {}
 
@@ -103,8 +105,44 @@ void SceneSystem::draw() {
     ImGui::ShowDemoWindow();
   }
 
+  if (!private_flags.test(4)) {
+    const ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImVec2 new_size{viewport->Size.x / 2.0F, viewport->Size.y / 2.0F};
+    ImGui::SetNextWindowSize(new_size);
+    private_flags.set(4);
+  }
+
   ImGui::Begin("Config Window");
   ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_None);
+  if (ImGui::BeginTabItem("2DSimulation")) {
+    std::optional<uint32_t> top_id = get_top_scene_id();
+    if (!top_id.has_value() ||
+        top_id != get_scene_id_by_template<TwoDimWorldScene>()) {
+      clear_scenes();
+      push_scene([](SceneSystem *ctx) {
+        return std::make_unique<TwoDimWorldScene>(ctx);
+      });
+      std::println(stdout, "Pushed 2DWorldScene.");
+    }
+
+    ImGui::TextWrapped("scene_2d is a global table in 2DSimulation.");
+    ImGui::TextWrapped(
+        "Create an update function \"scene_2d.update\" that accepts "
+        "one number parameter delta-time.");
+    ImGui::TextWrapped("\nAvailable functions:");
+    ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
+    ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.getballvel() -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.applyballimpulse(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.gettrapezoidpos() -> number, number");
+    ImGui::TextWrapped("  scene_2d.settrapezoidpos(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.gettrapezoidvel() -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.applytrapezoidimpulse(number, number) -> boolean");
+
+    ImGui::EndTabItem();
+  }
   if (ImGui::BeginTabItem("Settings")) {
     std::optional<uint32_t> top_id = get_top_scene_id();
     if (top_id.has_value()) {
@@ -159,35 +197,6 @@ void SceneSystem::draw() {
       });
       std::println(stdout, "Pushed ScriptEditScene.");
     }
-    ImGui::EndTabItem();
-  }
-  if (ImGui::BeginTabItem("2DSimulation")) {
-    std::optional<uint32_t> top_id = get_top_scene_id();
-    if (!top_id.has_value() ||
-        top_id != get_scene_id_by_template<TwoDimWorldScene>()) {
-      clear_scenes();
-      push_scene([](SceneSystem *ctx) {
-        return std::make_unique<TwoDimWorldScene>(ctx);
-      });
-      std::println(stdout, "Pushed 2DWorldScene.");
-    }
-
-    ImGui::TextWrapped("scene_2d is a global table in 2DSimulation.");
-    ImGui::TextWrapped(
-        "Create an update function \"scene_2d.update\" that accepts "
-        "one number parameter delta-time.");
-    ImGui::TextWrapped("\nAvailable functions:");
-    ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
-    ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.getballvel() -> number, number");
-    ImGui::TextWrapped(
-        "  scene_2d.applyballimpulse(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.gettrapezoidpos() -> number, number");
-    ImGui::TextWrapped("  scene_2d.settrapezoidpos(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.gettrapezoidvel() -> number, number");
-    ImGui::TextWrapped(
-        "  scene_2d.applytrapezoidimpulse(number, number) -> boolean");
-
     ImGui::EndTabItem();
   }
   ImGui::EndTabBar();
@@ -352,6 +361,34 @@ void SceneSystem::init_lua() {
     flags.reset(1);
   } else {
     flags.set(1);
+
+    // Load Default script.
+    const auto temp_fn_load_default_script = [](lua_State *lctx) -> int {
+      lua_pushstring(lctx, DEFAULT_BALL_SCENE_SCRIPT);  // +1
+      return 1;
+    };
+    lua_pushcfunction(lua_ctx, temp_fn_load_default_script);  // +1
+    lua_setglobal(lua_ctx, "temp_fn_load_default_global");    // -1
+    int ret = luaL_dostring(
+        lua_ctx,
+        "local moonscript = require('moonscript.base')\n"
+        "local moon_string = temp_fn_load_default_global()\n"
+        "local to_call, error_obj = moonscript.loadstring(moon_string)\n"
+        "if error_obj ~= nil then\n"
+        "print(error_obj)\n"
+        "error(error_obj)\n"
+        "else\n"
+        "to_call()\n"
+        "end\n");
+    if (ret == 1) {
+      lua_pop(lua_ctx, 1);
+    } else {
+      push_scene([](SceneSystem *ctx) {
+        return std::make_unique<TwoDimWorldScene>(ctx);
+      });
+    }
+    lua_pushnil(lua_ctx);                                   // +1
+    lua_setglobal(lua_ctx, "temp_fn_load_default_global");  // -1
   }
 }
 
