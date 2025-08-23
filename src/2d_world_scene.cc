@@ -22,7 +22,22 @@ extern "C" {
 }
 #include <raylib.h>
 
+// standard library includes
+#include <format>
+#include <print>
+#include <string>
+
 // Lua functions
+int lua_interface_fn_not_available(lua_State *lctx) {
+  const char *name = lua_tostring(lctx, lua_upvalueindex(1));
+  std::string out =
+      std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+  std::println(stdout, "{}", out);
+  lua_pushstring(lctx, out.c_str());
+  lua_error(lctx);
+  return 0;
+}
+
 int lua_interface_get_ball_pos(lua_State *lctx) {
   TwoDimWorldScene *scene = reinterpret_cast<TwoDimWorldScene *>(
       lua_touserdata(lctx, lua_upvalueindex(1)));
@@ -178,14 +193,21 @@ TwoDimWorldScene::~TwoDimWorldScene() {
   lua_getglobal(lua_ctx, "scene_ball");  // +1
 
   if (lua_istable(lua_ctx, -1) == 1) {
-    lua_pushnil(lua_ctx);                           // +1
-    lua_setfield(lua_ctx, -2, "getballpos");        // -1
-    lua_pushnil(lua_ctx);                           // +1
-    lua_setfield(lua_ctx, -2, "setballpos");        // -1
-    lua_pushnil(lua_ctx);                           // +1
-    lua_setfield(lua_ctx, -2, "getballvel");        // -1
-    lua_pushnil(lua_ctx);                           // +1
-    lua_setfield(lua_ctx, -2, "applyballimpulse");  // -1
+    lua_pushstring(lua_ctx, "getballpos");                         // +1
+    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
+    lua_setfield(lua_ctx, -2, "getballpos");                       // -1
+
+    lua_pushstring(lua_ctx, "setballpos");                         // +1
+    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
+    lua_setfield(lua_ctx, -2, "setballpos");                       // -1
+
+    lua_pushstring(lua_ctx, "getballvel");                         // +1
+    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
+    lua_setfield(lua_ctx, -2, "getballvel");                       // -1
+
+    lua_pushstring(lua_ctx, "applyballimpulse");                   // +1
+    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
+    lua_setfield(lua_ctx, -2, "applyballimpulse");                 // -1
   }
 
   lua_pop(lua_ctx, 1);  // -1
