@@ -80,7 +80,7 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
 }
 
 TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
-    : Scene(ctx), lua_error_text{} {
+    : Scene(ctx), lua_error_text{}, cached_ctx(ctx) {
   if (!ctx->get_map_value("lua_state").has_value()) {
     ctx->init_lua();
   }
@@ -169,7 +169,25 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pop(lua_ctx, 1);  // -1
 }
 
-TwoDimWorldScene::~TwoDimWorldScene() { b2DestroyWorld(this->world_id); }
+TwoDimWorldScene::~TwoDimWorldScene() {
+  b2DestroyWorld(this->world_id);
+
+  lua_State *lua_ctx = reinterpret_cast<lua_State *>(
+      cached_ctx->get_map_value("lua_state").value());
+
+  lua_getglobal(lua_ctx, "scene_ball");  // +1
+
+  lua_pushnil(lua_ctx);                           // +1
+  lua_setfield(lua_ctx, -2, "getballpos");        // -1
+  lua_pushnil(lua_ctx);                           // +1
+  lua_setfield(lua_ctx, -2, "setballpos");        // -1
+  lua_pushnil(lua_ctx);                           // +1
+  lua_setfield(lua_ctx, -2, "getballvel");        // -1
+  lua_pushnil(lua_ctx);                           // +1
+  lua_setfield(lua_ctx, -2, "applyballimpulse");  // -1
+
+  lua_pop(lua_ctx, 1);  // -1
+}
 
 void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
   lua_State *lua_ctx =

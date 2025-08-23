@@ -64,6 +64,7 @@ class TwoDimWorldScene : public Scene {
   b2BodyId left_wall_id;
   b2BodyId right_wall_id;
   b2BodyId ball_id;
+  SceneSystem *cached_ctx;
 };
 
 #endif
