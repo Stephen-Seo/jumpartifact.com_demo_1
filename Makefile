@@ -166,7 +166,7 @@ third_party/box2d_git:
 
 third_party/box2d_out/lib/libbox2d.a: third_party/box2d_git third_party/emsdk_git/emsdk_env.sh
 	cd third_party/box2d_git && git clean -xfd && git restore .
-	cd third_party/box2d_git && source ${EMSDK_SHELL} && emcmake cmake -S . -B BUILD -DBOX2D_VALIDATE=Off -DBOX2D_UNIT_TESTS=Off -DBOX2D_SAMPLES=Off -DCMAKE_BUILD_TYPE=Release && ${MAKE} -C BUILD
+	cd third_party/box2d_git && source ${EMSDK_SHELL} >&/dev/null && emcmake cmake -S . -B BUILD -DBOX2D_VALIDATE=Off -DBOX2D_UNIT_TESTS=Off -DBOX2D_SAMPLES=Off -DCMAKE_BUILD_TYPE=Release && ${MAKE} -C BUILD
 	install -D -m644 third_party/box2d_git/BUILD/src/libbox2d.a third_party/box2d_out/lib/libbox2d.a
 
 .PHONY: clean update format
