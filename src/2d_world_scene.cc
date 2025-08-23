@@ -36,11 +36,13 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
   std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
 
   if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
     lua_error(lctx);
     return 0;
   }
@@ -62,11 +64,13 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
   std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
 
   if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
     lua_error(lctx);
     return 0;
   }
@@ -92,11 +96,13 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
   std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
 
   if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
     lua_error(lctx);
     return 0;
   }
@@ -118,11 +124,13 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
 
   if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
     lua_error(lctx);
     return 0;
   }
