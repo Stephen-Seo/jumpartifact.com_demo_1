@@ -248,7 +248,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   wall_shape_def.material.restitution = 0.8F;
   b2CreatePolygonShape(this->right_wall_id, &wall_shape_def, &wall_box);
 
-  // Create dynamic body
+  // Create dynamic body ball
   b2BodyDef ball_body = b2DefaultBodyDef();
   ball_body.type = b2_dynamicBody;
   ball_body.position = b2Vec2{2.0F, 0.0F};
@@ -260,6 +260,27 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   ball_shape_def.density = 1.0F;
   ball_shape_def.material.friction = 0.3F;
   b2CreateCircleShape(this->ball_id, &ball_shape_def, &circle);
+
+  // Create dynamic body trapezoid
+  {
+    b2BodyDef t_body = b2DefaultBodyDef();
+    t_body.type = b2_dynamicBody;
+    t_body.position = b2Vec2{3.0F, 0.0F};
+    this->trapezoid_id = b2CreateBody(this->world_id, &t_body);
+
+    b2Hull t_hull = b2ComputeHull(T_POINTS, 4);
+    b2Polygon t_polygon = b2MakePolygon(&t_hull, T_RADIUS);
+    b2ShapeDef t_shape_def = b2DefaultShapeDef();
+    t_shape_def.density = 1.0F;
+    t_shape_def.material.friction = 0.6F;
+    b2CreatePolygonShape(this->trapezoid_id, &t_shape_def, &t_polygon);
+  }
+
+  {
+    b2ShapeId t_shape;
+    b2Body_GetShapes(trapezoid_id, &t_shape, 1);
+    cached_trapezoid_polygon = b2Shape_GetPolygon(t_shape);
+  }
 
   // Set up Lua stuff
   lua_State *lua_ctx =
@@ -355,6 +376,33 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
   b2Vec2 ball_pos = b2Body_GetPosition(ball_id);
   DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y * PIXEL_B2UNIT_RATIO,
              BALL_R * PIXEL_B2UNIT_RATIO, RED);
+
+  // Draw trapezoid
+  // b2AABB t_aabb = b2Body_ComputeAABB(trapezoid_id);
+  // DrawRectangleLines(
+  //    PIXEL_B2UNIT_RATIO * t_aabb.lowerBound.x,
+  //    PIXEL_B2UNIT_RATIO * t_aabb.lowerBound.y,
+  //    PIXEL_B2UNIT_RATIO * (t_aabb.upperBound.x - t_aabb.lowerBound.x),
+  //    PIXEL_B2UNIT_RATIO * (t_aabb.upperBound.y - t_aabb.lowerBound.y), BLUE);
+  b2Transform t_tr = b2Body_GetTransform(trapezoid_id);
+  Vector2 t_vertices[4];
+  for (int idx = 0; idx < 4; ++idx) {
+    t_vertices[idx].x =
+        (t_tr.p.x + t_tr.q.c * cached_trapezoid_polygon.vertices[idx].x -
+         t_tr.q.s * cached_trapezoid_polygon.vertices[idx].y) *
+        PIXEL_B2UNIT_RATIO;
+    t_vertices[idx].y =
+        (t_tr.p.y + t_tr.q.s * cached_trapezoid_polygon.vertices[idx].x +
+         t_tr.q.c * cached_trapezoid_polygon.vertices[idx].y) *
+        PIXEL_B2UNIT_RATIO;
+  }
+
+  DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
+               Vector2{t_vertices[1].x, t_vertices[1].y},
+               Vector2{t_vertices[0].x, t_vertices[0].y}, BLUE);
+  DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
+               Vector2{t_vertices[0].x, t_vertices[0].y},
+               Vector2{t_vertices[3].x, t_vertices[3].y}, BLUE);
 
   if (!lua_error_text.empty()) {
     DrawText(lua_error_text.c_str(), 0, 0, 10, WHITE);

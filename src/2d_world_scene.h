@@ -43,6 +43,10 @@ constexpr float WALL_HH = 1.5F;
 
 constexpr float BALL_R = 0.1F;
 
+constexpr b2Vec2 T_POINTS[4] = {
+    {0.1F, -0.1F}, {-0.1F, -0.1F}, {-0.15F, 0.1F}, {0.15F, 0.1F}};
+constexpr float T_RADIUS = 0.0F;
+
 // Forward declaration
 class TwoDimWorldScene;
 
@@ -68,11 +72,13 @@ class TwoDimWorldScene : public Scene {
  private:
   std::string lua_error_text;
   std::shared_ptr<TDWSPtrHolder> ptr_ctx;
+  b2Polygon cached_trapezoid_polygon;
   b2WorldId world_id;
   b2BodyId ground_id;
   b2BodyId left_wall_id;
   b2BodyId right_wall_id;
   b2BodyId ball_id;
+  b2BodyId trapezoid_id;
 };
 
 #endif
