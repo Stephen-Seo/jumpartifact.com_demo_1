@@ -177,14 +177,16 @@ TwoDimWorldScene::~TwoDimWorldScene() {
 
   lua_getglobal(lua_ctx, "scene_ball");  // +1
 
-  lua_pushnil(lua_ctx);                           // +1
-  lua_setfield(lua_ctx, -2, "getballpos");        // -1
-  lua_pushnil(lua_ctx);                           // +1
-  lua_setfield(lua_ctx, -2, "setballpos");        // -1
-  lua_pushnil(lua_ctx);                           // +1
-  lua_setfield(lua_ctx, -2, "getballvel");        // -1
-  lua_pushnil(lua_ctx);                           // +1
-  lua_setfield(lua_ctx, -2, "applyballimpulse");  // -1
+  if (lua_istable(lua_ctx, -1) == 1) {
+    lua_pushnil(lua_ctx);                           // +1
+    lua_setfield(lua_ctx, -2, "getballpos");        // -1
+    lua_pushnil(lua_ctx);                           // +1
+    lua_setfield(lua_ctx, -2, "setballpos");        // -1
+    lua_pushnil(lua_ctx);                           // +1
+    lua_setfield(lua_ctx, -2, "getballvel");        // -1
+    lua_pushnil(lua_ctx);                           // +1
+    lua_setfield(lua_ctx, -2, "applyballimpulse");  // -1
+  }
 
   lua_pop(lua_ctx, 1);  // -1
 }
