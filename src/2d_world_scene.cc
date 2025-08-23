@@ -177,6 +177,155 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   return 1;
 }
 
+int lua_interface_get_trapezoid_pos(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  b2Vec2 pos = scene->get_trapezoid_pos();
+
+  lua_pushnumber(lctx, pos.x);
+  lua_pushnumber(lctx, pos.y);
+
+  return 2;
+}
+
+int lua_interface_set_trapezoid_pos(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  int n = lua_gettop(lctx);
+  if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    lua_pushboolean(lctx, 0);
+    return 1;
+  }
+
+  scene->set_trapezoid_pos(lua_tonumber(lctx, -2), lua_tonumber(lctx, -1));
+
+  lua_pushboolean(lctx, 1);
+  return 1;
+}
+
+int lua_interface_get_trapezoid_vel(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  b2Vec2 vel = scene->get_trapezoid_vel();
+
+  lua_pushnumber(lctx, vel.x);
+  lua_pushnumber(lctx, vel.y);
+
+  return 2;
+}
+
+int lua_interface_apply_trapezoid_impulse(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  int n = lua_gettop(lctx);
+  if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    lua_pushboolean(lctx, 0);
+    return 1;
+  }
+
+  scene->apply_trapezoid_impulse(lua_tonumber(lctx, -2),
+                                 lua_tonumber(lctx, -1));
+
+  lua_pushboolean(lctx, 1);
+  return 1;
+}
+
 int lua_interface_helper_cleanup_ptr_holder(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr_ptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
@@ -248,7 +397,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   wall_shape_def.material.restitution = 0.8F;
   b2CreatePolygonShape(this->right_wall_id, &wall_shape_def, &wall_box);
 
-  // Create dynamic body
+  // Create dynamic body ball
   b2BodyDef ball_body = b2DefaultBodyDef();
   ball_body.type = b2_dynamicBody;
   ball_body.position = b2Vec2{2.0F, 0.0F};
@@ -261,20 +410,41 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   ball_shape_def.material.friction = 0.3F;
   b2CreateCircleShape(this->ball_id, &ball_shape_def, &circle);
 
+  // Create dynamic body trapezoid
+  {
+    b2BodyDef t_body = b2DefaultBodyDef();
+    t_body.type = b2_dynamicBody;
+    t_body.position = b2Vec2{3.0F, 0.0F};
+    this->trapezoid_id = b2CreateBody(this->world_id, &t_body);
+
+    b2Hull t_hull = b2ComputeHull(T_POINTS, 4);
+    b2Polygon t_polygon = b2MakePolygon(&t_hull, T_RADIUS);
+    b2ShapeDef t_shape_def = b2DefaultShapeDef();
+    t_shape_def.density = 1.0F;
+    t_shape_def.material.friction = 0.6F;
+    b2CreatePolygonShape(this->trapezoid_id, &t_shape_def, &t_polygon);
+  }
+
+  {
+    b2ShapeId t_shape;
+    b2Body_GetShapes(trapezoid_id, &t_shape, 1);
+    cached_trapezoid_polygon = b2Shape_GetPolygon(t_shape);
+  }
+
   // Set up Lua stuff
   lua_State *lua_ctx =
       reinterpret_cast<lua_State *>(ctx->get_map_value("lua_state").value());
 
-  lua_getglobal(lua_ctx, "scene_ball");  // +1
+  lua_getglobal(lua_ctx, "scene_2d");  // +1
   if (lua_istable(lua_ctx, -1) != 1) {
-    lua_pop(lua_ctx, 1);                   // -1
-    lua_newtable(lua_ctx);                 // +1
-    lua_setglobal(lua_ctx, "scene_ball");  // -1
+    lua_pop(lua_ctx, 1);                 // -1
+    lua_newtable(lua_ctx);               // +1
+    lua_setglobal(lua_ctx, "scene_2d");  // -1
   } else {
     lua_pop(lua_ctx, 1);  // -1
   }
 
-  lua_getglobal(lua_ctx, "scene_ball");  // +1
+  lua_getglobal(lua_ctx, "scene_2d");  // +1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
   lua_pushstring(lua_ctx, "getballpos");                     // +1
@@ -296,6 +466,27 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "applyballimpulse");                   // -1
 
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);         // +1
+  lua_pushstring(lua_ctx, "gettrapezoidpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_trapezoid_pos, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "gettrapezoidpos");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);         // +1
+  lua_pushstring(lua_ctx, "settrapezoidpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_trapezoid_pos, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "settrapezoidpos");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);         // +1
+  lua_pushstring(lua_ctx, "gettrapezoidvel");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_trapezoid_vel, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "gettrapezoidvel");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);  // +1
+  lua_pushstring(lua_ctx, "applytrapezoidimpulse");        // +1
+  lua_pushcclosure(lua_ctx, lua_interface_apply_trapezoid_impulse,
+                   2);                                 // -2, +1
+  lua_setfield(lua_ctx, -2, "applytrapezoidimpulse");  // -1
+
   lua_pop(lua_ctx, 1);  // -1
 }
 
@@ -306,7 +497,7 @@ void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
       reinterpret_cast<lua_State *>(ctx->get_map_value("lua_state").value());
 
   // Lua update
-  lua_getglobal(lua_ctx, "scene_ball");  // +1
+  lua_getglobal(lua_ctx, "scene_2d");  // +1
   if (lua_istable(lua_ctx, -1) != 1) {
     lua_pop(lua_ctx, 1);  // -1
   } else {
@@ -356,6 +547,33 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
   DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y * PIXEL_B2UNIT_RATIO,
              BALL_R * PIXEL_B2UNIT_RATIO, RED);
 
+  // Draw trapezoid
+  // b2AABB t_aabb = b2Body_ComputeAABB(trapezoid_id);
+  // DrawRectangleLines(
+  //    PIXEL_B2UNIT_RATIO * t_aabb.lowerBound.x,
+  //    PIXEL_B2UNIT_RATIO * t_aabb.lowerBound.y,
+  //    PIXEL_B2UNIT_RATIO * (t_aabb.upperBound.x - t_aabb.lowerBound.x),
+  //    PIXEL_B2UNIT_RATIO * (t_aabb.upperBound.y - t_aabb.lowerBound.y), BLUE);
+  b2Transform t_tr = b2Body_GetTransform(trapezoid_id);
+  Vector2 t_vertices[4];
+  for (int idx = 0; idx < 4; ++idx) {
+    t_vertices[idx].x =
+        (t_tr.p.x + t_tr.q.c * cached_trapezoid_polygon.vertices[idx].x -
+         t_tr.q.s * cached_trapezoid_polygon.vertices[idx].y) *
+        PIXEL_B2UNIT_RATIO;
+    t_vertices[idx].y =
+        (t_tr.p.y + t_tr.q.s * cached_trapezoid_polygon.vertices[idx].x +
+         t_tr.q.c * cached_trapezoid_polygon.vertices[idx].y) *
+        PIXEL_B2UNIT_RATIO;
+  }
+
+  DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
+               Vector2{t_vertices[1].x, t_vertices[1].y},
+               Vector2{t_vertices[0].x, t_vertices[0].y}, BLUE);
+  DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
+               Vector2{t_vertices[0].x, t_vertices[0].y},
+               Vector2{t_vertices[3].x, t_vertices[3].y}, BLUE);
+
   if (!lua_error_text.empty()) {
     DrawText(lua_error_text.c_str(), 0, 0, 10, WHITE);
   }
@@ -379,4 +597,21 @@ b2Vec2 TwoDimWorldScene::get_ball_vel() const {
 
 void TwoDimWorldScene::apply_ball_impulse(float x, float y) {
   b2Body_ApplyLinearImpulseToCenter(ball_id, b2Vec2{x, y}, true);
+}
+
+b2Vec2 TwoDimWorldScene::get_trapezoid_pos() const {
+  return b2Body_GetPosition(trapezoid_id);
+}
+
+void TwoDimWorldScene::set_trapezoid_pos(float x, float y) {
+  b2Rot rot = b2Body_GetRotation(trapezoid_id);
+  b2Body_SetTransform(trapezoid_id, b2Vec2{x, y}, rot);
+}
+
+b2Vec2 TwoDimWorldScene::get_trapezoid_vel() const {
+  return b2Body_GetLinearVelocity(trapezoid_id);
+}
+
+void TwoDimWorldScene::apply_trapezoid_impulse(float x, float y) {
+  b2Body_ApplyLinearImpulseToCenter(trapezoid_id, b2Vec2{x, y}, true);
 }
