@@ -244,17 +244,17 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
   lua_pushstring(lua_ctx, "setballpos");                     // +1
-  lua_pushcclosure(lua_ctx, lua_interface_set_ball_pos, 2);  // -1, +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_ball_pos, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "setballpos");                   // -1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
   lua_pushstring(lua_ctx, "getballvel");                     // +1
-  lua_pushcclosure(lua_ctx, lua_interface_get_ball_vel, 2);  // -1, +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_ball_vel, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "getballvel");                   // -1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);          // +1
   lua_pushstring(lua_ctx, "applyballimpulse");                     // +1
-  lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 2);  // -1, +1
+  lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "applyballimpulse");                   // -1
 
   lua_pop(lua_ctx, 1);  // -1
