@@ -28,16 +28,6 @@ extern "C" {
 #include <string>
 
 // Lua functions
-int lua_interface_fn_not_available(lua_State *lctx) {
-  const char *name = lua_tostring(lctx, lua_upvalueindex(1));
-  std::string out =
-      std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-  std::println(stdout, "{}", out);
-  lua_pushstring(lctx, out.c_str());
-  lua_error(lctx);
-  return 0;
-}
-
 int lua_interface_get_ball_pos(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
