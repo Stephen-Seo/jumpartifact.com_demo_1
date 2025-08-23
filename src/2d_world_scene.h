@@ -69,6 +69,11 @@ class TwoDimWorldScene : public Scene {
   b2Vec2 get_ball_vel() const;
   void apply_ball_impulse(float x, float y);
 
+  b2Vec2 get_trapezoid_pos() const;
+  void set_trapezoid_pos(float x, float y);
+  b2Vec2 get_trapezoid_vel() const;
+  void apply_trapezoid_impulse(float x, float y);
+
  private:
   std::string lua_error_text;
   std::shared_ptr<TDWSPtrHolder> ptr_ctx;

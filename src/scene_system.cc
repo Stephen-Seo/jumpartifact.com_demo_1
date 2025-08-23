@@ -172,16 +172,21 @@ void SceneSystem::draw() {
       std::println(stdout, "Pushed 2DWorldScene.");
     }
 
-    ImGui::TextWrapped("scene_ball is a global table in 2DSimulation.");
+    ImGui::TextWrapped("scene_2d is a global table in 2DSimulation.");
     ImGui::TextWrapped(
-        "Create an update function \"scene_ball.update\" that accepts "
+        "Create an update function \"scene_2d.update\" that accepts "
         "one number parameter delta-time.");
     ImGui::TextWrapped("\nAvailable functions:");
-    ImGui::TextWrapped("  scene_ball.getballpos() -> number, number");
-    ImGui::TextWrapped("  scene_ball.setballpos(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_ball.getballvel() -> number, number");
+    ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
+    ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.getballvel() -> number, number");
     ImGui::TextWrapped(
-        "  scene_ball.applyballimpulse(number, number) -> boolean");
+        "  scene_2d.applyballimpulse(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.gettrapezoidpos() -> number, number");
+    ImGui::TextWrapped("  scene_2d.settrapezoidpos(number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.gettrapezoidvel() -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.applytrapezoidimpulse(number, number) -> boolean");
 
     ImGui::EndTabItem();
   }
@@ -338,8 +343,8 @@ void SceneSystem::init_lua() {
   lua_lpeg_of << "return luaopen_lpeg_global()";
   lua_lpeg_of.close();
 
-  lua_newtable(lua_ctx);                 // +1
-  lua_setglobal(lua_ctx, "scene_ball");  // -1
+  lua_newtable(lua_ctx);               // +1
+  lua_setglobal(lua_ctx, "scene_2d");  // -1
 
   int ret = luaL_dostring(lua_ctx, "require('moonscript')");
   if (ret == 1) {
