@@ -23,6 +23,7 @@ extern "C" {
 #include <raylib.h>
 
 // standard library includes
+#include <cstdlib>
 #include <format>
 #include <print>
 #include <string>
@@ -33,18 +34,27 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
-  if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
-    lua_error(lctx);
-    return 0;
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
   }
-  TwoDimWorldScene *scene = sptr->scene_ptr;
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
 
   b2Vec2 pos = scene->get_ball_pos();
 
@@ -59,18 +69,27 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
-  if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
-    lua_error(lctx);
-    return 0;
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
   }
-  TwoDimWorldScene *scene = sptr->scene_ptr;
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
 
   int n = lua_gettop(lctx);
   if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
@@ -89,18 +108,27 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
-  if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
-    lua_error(lctx);
-    return 0;
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
   }
-  TwoDimWorldScene *scene = sptr->scene_ptr;
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
 
   b2Vec2 vel = scene->get_ball_vel();
 
@@ -115,18 +143,27 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
-  if (!sptr) {
-    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
-    std::string out =
-        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
-    std::println(stdout, "{}", out);
-    lua_pushstring(lctx, out.c_str());
-    lua_error(lctx);
-    return 0;
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
   }
-  TwoDimWorldScene *scene = sptr->scene_ptr;
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
 
   int n = lua_gettop(lctx);
   if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
