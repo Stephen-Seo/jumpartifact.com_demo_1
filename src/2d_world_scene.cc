@@ -39,8 +39,22 @@ int lua_interface_fn_not_available(lua_State *lctx) {
 }
 
 int lua_interface_get_ball_pos(lua_State *lctx) {
-  TwoDimWorldScene *scene = reinterpret_cast<TwoDimWorldScene *>(
-      lua_touserdata(lctx, lua_upvalueindex(1)));
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+
+  if (!sptr) {
+    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+    std::string out =
+        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+    std::println(stdout, "{}", out);
+    lua_pushstring(lctx, out.c_str());
+    lua_error(lctx);
+    return 0;
+  }
+  TwoDimWorldScene *scene = sptr->scene_ptr;
 
   b2Vec2 pos = scene->get_ball_pos();
 
@@ -51,8 +65,22 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
 }
 
 int lua_interface_set_ball_pos(lua_State *lctx) {
-  TwoDimWorldScene *scene = reinterpret_cast<TwoDimWorldScene *>(
-      lua_touserdata(lctx, lua_upvalueindex(1)));
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+
+  if (!sptr) {
+    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+    std::string out =
+        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+    std::println(stdout, "{}", out);
+    lua_pushstring(lctx, out.c_str());
+    lua_error(lctx);
+    return 0;
+  }
+  TwoDimWorldScene *scene = sptr->scene_ptr;
 
   int n = lua_gettop(lctx);
   if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
@@ -67,8 +95,22 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
 }
 
 int lua_interface_get_ball_vel(lua_State *lctx) {
-  TwoDimWorldScene *scene = reinterpret_cast<TwoDimWorldScene *>(
-      lua_touserdata(lctx, lua_upvalueindex(1)));
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+
+  if (!sptr) {
+    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+    std::string out =
+        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+    std::println(stdout, "{}", out);
+    lua_pushstring(lctx, out.c_str());
+    lua_error(lctx);
+    return 0;
+  }
+  TwoDimWorldScene *scene = sptr->scene_ptr;
 
   b2Vec2 vel = scene->get_ball_vel();
 
@@ -79,8 +121,22 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
 }
 
 int lua_interface_apply_ball_impulse(lua_State *lctx) {
-  TwoDimWorldScene *scene = reinterpret_cast<TwoDimWorldScene *>(
-      lua_touserdata(lctx, lua_upvalueindex(1)));
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  std::shared_ptr<TDWSPtrHolder> sptr = wptr->lock();
+
+  if (!sptr) {
+    const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+    std::string out =
+        std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+    std::println(stdout, "{}", out);
+    lua_pushstring(lctx, out.c_str());
+    lua_error(lctx);
+    return 0;
+  }
+  TwoDimWorldScene *scene = sptr->scene_ptr;
 
   int n = lua_gettop(lctx);
   if (n != 2 || lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
@@ -94,8 +150,34 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   return 1;
 }
 
+int lua_interface_helper_cleanup_ptr_holder(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr_ptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, -1));
+
+  wptr_ptr->std::weak_ptr<TDWSPtrHolder>::~weak_ptr();
+
+  return 0;
+}
+
+// Lua: -0, +1
+void lua_interface_helper_push_ptr_holder(lua_State *lctx,
+                                          std::weak_ptr<TDWSPtrHolder> wptr) {
+  void *alloc_buf =
+      lua_newuserdatauv(lctx, sizeof(std::weak_ptr<TDWSPtrHolder>), 0);  // +1
+  std::weak_ptr<TDWSPtrHolder> *wptr_ptr =
+      new (alloc_buf) std::weak_ptr<TDWSPtrHolder>(wptr);
+
+  lua_newtable(lctx);                                                // +1
+  lua_pushcfunction(lctx, lua_interface_helper_cleanup_ptr_holder);  // +1
+  lua_setfield(lctx, -2, "__gc");                                    // -1
+  lua_setmetatable(lctx, -2);                                        // -1
+}
+
 TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
-    : Scene(ctx), lua_error_text{}, cached_ctx(ctx) {
+    : Scene(ctx),
+      lua_error_text{},
+      ptr_ctx(std::make_shared<TDWSPtrHolder>(this)) {
   if (!ctx->get_map_value("lua_state").has_value()) {
     ctx->init_lua();
   }
@@ -165,53 +247,30 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 
   lua_getglobal(lua_ctx, "scene_ball");  // +1
 
-  lua_pushlightuserdata(lua_ctx, this);                      // +1
-  lua_pushcclosure(lua_ctx, lua_interface_get_ball_pos, 1);  // -1, +1
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
+  lua_pushstring(lua_ctx, "getballpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_ball_pos, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "getballpos");                   // -1
 
-  lua_pushlightuserdata(lua_ctx, this);                      // +1
-  lua_pushcclosure(lua_ctx, lua_interface_set_ball_pos, 1);  // -1, +1
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
+  lua_pushstring(lua_ctx, "setballpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_ball_pos, 2);  // -1, +1
   lua_setfield(lua_ctx, -2, "setballpos");                   // -1
 
-  lua_pushlightuserdata(lua_ctx, this);                      // +1
-  lua_pushcclosure(lua_ctx, lua_interface_get_ball_vel, 1);  // -1, +1
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);    // +1
+  lua_pushstring(lua_ctx, "getballvel");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_ball_vel, 2);  // -1, +1
   lua_setfield(lua_ctx, -2, "getballvel");                   // -1
 
-  lua_pushlightuserdata(lua_ctx, this);                            // +1
-  lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 1);  // -1, +1
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);          // +1
+  lua_pushstring(lua_ctx, "applyballimpulse");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 2);  // -1, +1
   lua_setfield(lua_ctx, -2, "applyballimpulse");                   // -1
 
   lua_pop(lua_ctx, 1);  // -1
 }
 
-TwoDimWorldScene::~TwoDimWorldScene() {
-  b2DestroyWorld(this->world_id);
-
-  lua_State *lua_ctx = reinterpret_cast<lua_State *>(
-      cached_ctx->get_map_value("lua_state").value());
-
-  lua_getglobal(lua_ctx, "scene_ball");  // +1
-
-  if (lua_istable(lua_ctx, -1) == 1) {
-    lua_pushstring(lua_ctx, "getballpos");                         // +1
-    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
-    lua_setfield(lua_ctx, -2, "getballpos");                       // -1
-
-    lua_pushstring(lua_ctx, "setballpos");                         // +1
-    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
-    lua_setfield(lua_ctx, -2, "setballpos");                       // -1
-
-    lua_pushstring(lua_ctx, "getballvel");                         // +1
-    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
-    lua_setfield(lua_ctx, -2, "getballvel");                       // -1
-
-    lua_pushstring(lua_ctx, "applyballimpulse");                   // +1
-    lua_pushcclosure(lua_ctx, lua_interface_fn_not_available, 1);  // -1, +1
-    lua_setfield(lua_ctx, -2, "applyballimpulse");                 // -1
-  }
-
-  lua_pop(lua_ctx, 1);  // -1
-}
+TwoDimWorldScene::~TwoDimWorldScene() { b2DestroyWorld(this->world_id); }
 
 void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
   lua_State *lua_ctx =

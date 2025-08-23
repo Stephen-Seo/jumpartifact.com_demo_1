@@ -23,6 +23,7 @@
 #include <box2d/box2d.h>
 
 // standard library includes
+#include <memory>
 #include <string>
 
 constexpr float PIXEL_B2UNIT_RATIO = 200.0F;
@@ -42,6 +43,13 @@ constexpr float WALL_HH = 1.5F;
 
 constexpr float BALL_R = 0.1F;
 
+// Forward declaration
+class TwoDimWorldScene;
+
+struct TDWSPtrHolder {
+  TwoDimWorldScene *scene_ptr;
+};
+
 class TwoDimWorldScene : public Scene {
  public:
   TwoDimWorldScene(SceneSystem *ctx);
@@ -59,12 +67,12 @@ class TwoDimWorldScene : public Scene {
 
  private:
   std::string lua_error_text;
+  std::shared_ptr<TDWSPtrHolder> ptr_ctx;
   b2WorldId world_id;
   b2BodyId ground_id;
   b2BodyId left_wall_id;
   b2BodyId right_wall_id;
   b2BodyId ball_id;
-  SceneSystem *cached_ctx;
 };
 
 #endif
