@@ -127,8 +127,16 @@ void SceneSystem::draw() {
 
     ImGui::TextWrapped("scene_2d is a global table in 2DSimulation.");
     ImGui::TextWrapped(
-        "Create an update function \"scene_2d.update\" that accepts "
-        "one number parameter delta-time.");
+        "\"scene_2d.update\" accepts one number parameter delta-time.");
+    ImGui::TextWrapped(
+        "\"scene_2d.key_pressed_callback\" accepts one integer parameter (the "
+        "key that was pressed).");
+    ImGui::TextWrapped(
+        "\"scene_2d.gamepad_pressed_callback\" accepts one integer parameter "
+        "(the button that was pressed).");
+    ImGui::TextWrapped(
+        "\"scene_2d.gamepad_axis_callback\" accepts one integer (axis id) and "
+        "one float (axis value).");
     ImGui::TextWrapped("\nAvailable functions:");
     ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
     ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");
