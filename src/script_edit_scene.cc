@@ -71,7 +71,7 @@ ScriptEditScene::ScriptEditScene(SceneSystem *ctx)
       exec_state(ExecState::PENDING),
       saveload_state(ExecState::PENDING) {
   std::strcpy(buf.data(), LUA_DEFAULT_TEXT);
-  std::strcpy(filename.data(), "/test.lua");
+  std::strcpy(filename.data(), "/test.moon");
 
   if (!ctx->get_map_value("lua_state").has_value()) {
     ctx->init_lua();

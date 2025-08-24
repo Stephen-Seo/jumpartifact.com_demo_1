@@ -41,6 +41,11 @@ const static char *MOONSCRIPT_HELP_TEXT = "-- Moonscript is loaded.\n";
 const static char *DEFAULT_BALL_SCENE_SCRIPT =
     "scene_2d.ball_elapsed = 0.0\n"
     "scene_2d.trapezoid_elapsed = -0.8\n"
+    "scene_2d.gamepad_pressed_callback = (btn) ->\n"
+    "  print \"Button \" .. btn .. \" pressed\"\n"
+    "scene_2d.gamepad_axis_callback = (axis, v) ->\n"
+    "  if v > 0.15 or v < -0.15\n"
+    "    print \"Axis \" .. axis .. \" value \" .. v\n"
     "scene_2d.key_pressed_callback = (key) ->\n"
     "  print \"Key \" .. key .. \" pressed\"\n"
     "  if key == 262\n"

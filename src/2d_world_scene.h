@@ -79,6 +79,7 @@ class TwoDimWorldScene : public Scene {
   std::string lua_error_text;
   std::shared_ptr<TDWSPtrHolder> ptr_ctx;
   // 0 - error occurred
+  // 1 - gamepad 0 is available
   std::bitset<32> flags;
   b2Polygon cached_trapezoid_polygon;
   b2WorldId world_id;

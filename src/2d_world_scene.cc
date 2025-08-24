@@ -488,6 +488,10 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_setfield(lua_ctx, -2, "applytrapezoidimpulse");  // -1
 
   lua_pop(lua_ctx, 1);  // -1
+
+  if (IsGamepadAvailable(0)) {
+    flags.set(1);
+  }
 }
 
 TwoDimWorldScene::~TwoDimWorldScene() { b2DestroyWorld(this->world_id); }
@@ -523,6 +527,51 @@ void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
         ret = GetKeyPressed();
       }
       lua_pop(lua_ctx, 1);  // -1
+    }
+
+    // Gamepad events
+    if (flags.test(1)) {
+      // Gamepad buttons
+      lua_ret_type =
+          lua_getfield(lua_ctx, -1, "gamepad_pressed_callback");  // +1
+      if (lua_ret_type != LUA_TFUNCTION) {
+        lua_pop(lua_ctx, 1);  // -1
+      } else {
+        for (int idx = 0; idx < 32; ++idx) {
+          if (IsGamepadButtonPressed(0, idx)) {
+            lua_pushinteger(lua_ctx, idx);              // +1
+            int lua_ret = lua_pcall(lua_ctx, 1, 0, 0);  // -2
+            if (lua_ret != LUA_OK) {                    // error +1
+              lua_error_text = std::format("{}", lua_tostring(lua_ctx, -1));
+              flags.set(0);
+              lua_pop(lua_ctx, 2);  // -2
+              return;
+            }
+            lua_getfield(lua_ctx, -1, "gamepad_pressed_callback");  // +1
+          }
+        }  // for idx 0..32
+        lua_pop(lua_ctx, 1);  // -1
+      }
+      // Gamepad axis
+      const int axis_count = GetGamepadAxisCount(0);
+      lua_ret_type = lua_getfield(lua_ctx, -1, "gamepad_axis_callback");  // +1
+      if (lua_ret_type != LUA_TFUNCTION) {
+        lua_pop(lua_ctx, 1);  // -1
+      } else {
+        for (int idx = 0; idx < axis_count; ++idx) {
+          lua_pushinteger(lua_ctx, idx);                            // +1
+          lua_pushnumber(lua_ctx, GetGamepadAxisMovement(0, idx));  // +1
+          int lua_ret = lua_pcall(lua_ctx, 2, 0, 0);                // -3
+          if (lua_ret != LUA_OK) {                                  // error +1
+            lua_error_text = std::format("{}", lua_tostring(lua_ctx, -1));
+            flags.set(0);
+            lua_pop(lua_ctx, 2);  // -2
+            return;
+          }
+          lua_getfield(lua_ctx, -1, "gamepad_axis_callback");  // +1
+        }
+        lua_pop(lua_ctx, 1);  // -1
+      }
     }
 
     // Lua update
