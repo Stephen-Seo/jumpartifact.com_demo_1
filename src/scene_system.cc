@@ -129,6 +129,9 @@ void SceneSystem::draw() {
     ImGui::TextWrapped(
         "Create an update function \"scene_2d.update\" that accepts "
         "one number parameter delta-time.");
+    ImGui::TextWrapped(
+        "Create a callback function \"scene_2d.key_pressed_callback\" that "
+        "accepts one integer parameter (the key that was pressed).");
     ImGui::TextWrapped("\nAvailable functions:");
     ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
     ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");

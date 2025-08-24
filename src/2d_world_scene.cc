@@ -493,14 +493,39 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
 TwoDimWorldScene::~TwoDimWorldScene() { b2DestroyWorld(this->world_id); }
 
 void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
+  if (flags.test(0)) {
+    return;
+  }
+
   lua_State *lua_ctx =
       reinterpret_cast<lua_State *>(ctx->get_map_value("lua_state").value());
 
-  // Lua update
-  lua_getglobal(lua_ctx, "scene_2d");  // +1
-  if (lua_istable(lua_ctx, -1) != 1) {
-    lua_pop(lua_ctx, 1);  // -1
-  } else {
+  int lua_ret_type = lua_getglobal(lua_ctx, "scene_2d");  // +1
+
+  // Input events
+  if (lua_ret_type == LUA_TTABLE) {
+    // Keyboard events
+    lua_ret_type = lua_getfield(lua_ctx, -1, "key_pressed_callback");  // +1
+    if (lua_ret_type != LUA_TFUNCTION) {
+      lua_pop(lua_ctx, 1);  // -1
+    } else {
+      int ret = GetKeyPressed();
+      while (ret != 0) {
+        lua_pushinteger(lua_ctx, ret);              // +1
+        int lua_ret = lua_pcall(lua_ctx, 1, 0, 0);  // -2
+        if (lua_ret != LUA_OK) {                    // error +1
+          lua_error_text = std::format("{}", lua_tostring(lua_ctx, -1));
+          flags.set(0);
+          lua_pop(lua_ctx, 2);  // -2
+          return;
+        }
+        lua_getfield(lua_ctx, -1, "key_pressed_callback");  // +1
+        ret = GetKeyPressed();
+      }
+      lua_pop(lua_ctx, 1);  // -1
+    }
+
+    // Lua update
     lua_pushnumber(lua_ctx, dt);                    // +1
     lua_setfield(lua_ctx, -2, "dt");                // -1
     int ret = lua_getfield(lua_ctx, -1, "update");  // +1
@@ -515,10 +540,13 @@ void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
           lua_error_text = "WARNING: Unknown Lua error!";
         }
         lua_pop(lua_ctx, 1);  // -1
+        flags.set(0);
       }
     } else {
       lua_pop(lua_ctx, 1);  // -1
     }
+    lua_pop(lua_ctx, 1);  // -1
+  } else {
     lua_pop(lua_ctx, 1);  // -1
   }
 
