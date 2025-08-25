@@ -506,12 +506,11 @@ void TwoDimWorldScene::update(SceneSystem *ctx, float dt) {
 
   int lua_ret_type = lua_getglobal(lua_ctx, "scene_2d");  // +1
 
-  // Set "scene_2d.dt"
-  lua_pushnumber(lua_ctx, dt);      // +1
-  lua_setfield(lua_ctx, -2, "dt");  // -1
-
-  // Input events
   if (lua_ret_type == LUA_TTABLE) {
+    // Set "scene_2d.dt"
+    lua_pushnumber(lua_ctx, dt);      // +1
+    lua_setfield(lua_ctx, -2, "dt");  // -1
+
     // Keyboard events
     lua_ret_type = lua_getfield(lua_ctx, -1, "key_pressed_callback");  // +1
     if (lua_ret_type != LUA_TFUNCTION) {
