@@ -127,6 +127,8 @@ void SceneSystem::draw() {
 
     ImGui::TextWrapped("scene_2d is a global table in 2DSimulation.");
     ImGui::TextWrapped(
+        "\"scene_2d.init\" should be a function that gets called once.");
+    ImGui::TextWrapped(
         "\"scene_2d.update\" accepts one number parameter delta-time.");
     ImGui::TextWrapped(
         "\"scene_2d.key_pressed_callback\" accepts one integer parameter (the "
@@ -138,16 +140,25 @@ void SceneSystem::draw() {
         "\"scene_2d.gamepad_axis_callback\" accepts one integer (axis id) and "
         "one float (axis value).");
     ImGui::TextWrapped("\nAvailable functions:");
-    ImGui::TextWrapped("  scene_2d.getballpos() -> number, number");
-    ImGui::TextWrapped("  scene_2d.setballpos(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.getballvel() -> number, number");
+    ImGui::TextWrapped("  scene_2d.createball() -> integer");
+    ImGui::TextWrapped("  scene_2d.destroyball(id: integer) -> boolean");
+    ImGui::TextWrapped("  scene_2d.getballpos(id: integer) -> number, number");
     ImGui::TextWrapped(
-        "  scene_2d.applyballimpulse(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.gettrapezoidpos() -> number, number");
-    ImGui::TextWrapped("  scene_2d.settrapezoidpos(number, number) -> boolean");
-    ImGui::TextWrapped("  scene_2d.gettrapezoidvel() -> number, number");
+        "  scene_2d.setballpos(id: integer, number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.getballvel(id: integer) -> number, number");
     ImGui::TextWrapped(
-        "  scene_2d.applytrapezoidimpulse(number, number) -> boolean");
+        "  scene_2d.applyballimpulse(id: integer, number, number) -> boolean");
+    ImGui::TextWrapped("  scene_2d.createtrapezoid() -> integer");
+    ImGui::TextWrapped("  scene_2d.destroytrapezoid(id: integer) -> boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.gettrapezoidpos(id: integer) -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.settrapezoidpos(id: integer, number, number) -> boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.gettrapezoidvel(id: integer) -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.applytrapezoidimpulse(id: integer, number, number) -> "
+        "boolean");
 
     ImGui::EndTabItem();
   }
@@ -390,10 +401,6 @@ void SceneSystem::init_lua() {
         "end\n");
     if (ret == 1) {
       lua_pop(lua_ctx, 1);
-    } else {
-      push_scene([](SceneSystem *ctx) {
-        return std::make_unique<TwoDimWorldScene>(ctx);
-      });
     }
     lua_pushnil(lua_ctx);                                   // +1
     lua_setglobal(lua_ctx, "temp_fn_load_default_global");  // -1
