@@ -10,6 +10,7 @@ CURRENT_WORKING_DIR != pwd
 EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
 EMSDK_VERSION ?= 4.0.13
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
+EMSDK_SHELL_DIR != dirname ${EMSDK_SHELL}
 
 RAYLIB_REPO_PATH ?= https://github.com/raysan5/raylib.git
 RAYLIB_VERSION_TAG ?= 5.5
@@ -45,7 +46,7 @@ all: dist/index.html
 
 dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a assets_embed/moonscript third_party/box2d_out/lib/libbox2d.a
 	@mkdir -p dist
-	source ${EMSDK_SHELL} >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
 		-Lthird_party/raylib_out/lib -lraylib \
 		-Lthird_party/imgui_out -limgui \
@@ -63,7 +64,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 
 third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh third_party/raylib_git
 	cd third_party/raylib_git && git clean -xfd && git restore . && patch -N -p1 < ${CURRENT_WORKING_DIR}/third_party/raylib_noF12.patch
-	source ${EMSDK_SHELL} >&/dev/null && ${MAKE} PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && ${MAKE} PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
 	install -D -m444 third_party/raylib_git/src/libraylib.a third_party/raylib_out/lib/libraylib.a
 	cd third_party/raylib_git && git clean -xfd && git restore .
 
@@ -81,7 +82,7 @@ third_party/rlImGui_git:
 
 third_party/rlImGui_out/rlImGui.cpp.o: third_party/emsdk_git/emsdk_env.sh third_party/raylib_out/include/raylib.h third_party/imgui_git third_party/rlImGui_git
 	@mkdir -p third_party/rlImGui_out
-	source ${EMSDK_SHELL} >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && em++ ${COMMON_FLAGS} -c -o third_party/rlImGui_out/rlImGui.cpp.o ${INCLUDE_FLAGS} third_party/rlImGui_git/rlImGui.cpp
 
 IMGUI_SOURCES := \
 	third_party/imgui_git/imgui.cpp \
@@ -100,11 +101,11 @@ IMGUI_OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cpp,.cpp.o,${IMGUI_SOURCES}))
 
 third_party/imgui_out/libimgui.a: third_party/imgui_git third_party/emsdk_git/emsdk_env.sh ${IMGUI_OBJECTS}
 	@mkdir -p third_party/imgui_out
-	source ${EMSDK_SHELL} >&/dev/null && emar rcs third_party/imgui_out/libimgui.a ${IMGUI_OBJECTS}
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emar rcs third_party/imgui_out/libimgui.a ${IMGUI_OBJECTS}
 
 ${OBJDIR}/third_party/imgui_git/%.cpp.o: third_party/imgui_git/%.cpp third_party/imgui_git third_party/emsdk_git/emsdk_env.sh
 	@mkdir -p ${OBJDIR}/third_party/imgui_git
-	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} $<
 
 third_party/emsdk_git/emsdk_env.sh:
 	test -d ./third_party/emsdk_git || git clone ${EMSDK_REPO_PATH} ./third_party/emsdk_git
@@ -113,7 +114,7 @@ third_party/emsdk_git/emsdk_env.sh:
 
 ${OBJDIR}/src/%.cc.o: src/%.cc ${HEADERS} third_party/raylib_out/include/raylib.h third_party/rlImGui_git third_party/imgui_git third_party/emsdk_git/emsdk_env.sh third_party/lua_out/include/lua.h third_party/lpeg_out/include/lpeg_exported.h third_party/box2d_git | format
 	@mkdir -p "$(dir $@)"
-	source ${EMSDK_SHELL} >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && em++ -c -o $@ -std=c++23 ${COMMON_FLAGS} ${INCLUDE_FLAGS} $<
 
 third_party/lua-${LUA_VERSION}.tar.gz:
 	curl -L -o third_party/lua-${LUA_VERSION}.tar.gz ${LUA_DL_LINK}
@@ -166,7 +167,7 @@ third_party/box2d_git:
 
 third_party/box2d_out/lib/libbox2d.a: third_party/box2d_git third_party/emsdk_git/emsdk_env.sh
 	cd third_party/box2d_git && git clean -xfd && git restore .
-	cd third_party/box2d_git && source ${EMSDK_SHELL} >&/dev/null && emcmake cmake -S . -B BUILD -DBOX2D_VALIDATE=Off -DBOX2D_UNIT_TESTS=Off -DBOX2D_SAMPLES=Off -DCMAKE_BUILD_TYPE=Release && ${MAKE} -C BUILD
+	cd third_party/box2d_git && pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emcmake cmake -S . -B BUILD -DBOX2D_VALIDATE=Off -DBOX2D_UNIT_TESTS=Off -DBOX2D_SAMPLES=Off -DCMAKE_BUILD_TYPE=Release && ${MAKE} -C BUILD
 	install -D -m644 third_party/box2d_git/BUILD/src/libbox2d.a third_party/box2d_out/lib/libbox2d.a
 
 .PHONY: clean update format

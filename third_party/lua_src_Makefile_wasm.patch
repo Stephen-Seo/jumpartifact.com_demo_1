@@ -10,15 +10,15 @@ Patch lua/src/Makefile to build for emscripten.
 +PLAT= generic
  
 -CC= gcc -std=gnu99
-+CC= source ${EMSDK_SHELL} >&/dev/null && emcc -std=gnu99
++CC= pushd $(dir ${EMSDK_SHELL}) >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emcc -std=gnu99
  CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  
 -AR= ar rcu
 -RANLIB= ranlib
-+AR= source ${EMSDK_SHELL} >&/dev/null && emar rcu
-+RANLIB= source ${EMSDK_SHELL} >&/dev/null && emranlib
++AR= pushd $(dir ${EMSDK_SHELL}) >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emar rcu
++RANLIB= pushd $(dir ${EMSDK_SHELL}) >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emranlib
  RM= rm -f
  UNAME= uname
  
