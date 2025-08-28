@@ -93,6 +93,7 @@ class TwoDimWorldScene : public Scene {
   void set_ball_pos(uint32_t idx, float x, float y);
   b2Vec2 get_ball_vel(uint32_t indx) const;
   void apply_ball_impulse(uint32_t idx, float x, float y);
+  void set_ball_color(uint32_t idx, Color color);
 
   uint32_t create_trapezoid();
   bool destroy_trapezoid(uint32_t idx);
@@ -100,6 +101,7 @@ class TwoDimWorldScene : public Scene {
   void set_trapezoid_pos(uint32_t idx, float x, float y);
   b2Vec2 get_trapezoid_vel(uint32_t idx) const;
   void apply_trapezoid_impulse(uint32_t idx, float x, float y);
+  void set_trapezoid_color(uint32_t idx, Color color);
 
   uint32_t create_octagon();
   bool destroy_octagon(uint32_t idx);
@@ -107,6 +109,7 @@ class TwoDimWorldScene : public Scene {
   void set_octagon_pos(uint32_t idx, float x, float y);
   b2Vec2 get_octagon_vel(uint32_t indx) const;
   void apply_octagon_impulse(uint32_t idx, float x, float y);
+  void set_octagon_color(uint32_t idx, Color color);
 
   float get_rand();
 

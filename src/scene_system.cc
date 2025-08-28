@@ -148,6 +148,23 @@ void SceneSystem::draw() {
     ImGui::TextWrapped("  scene_2d.getballvel(id: integer) -> number, number");
     ImGui::TextWrapped(
         "  scene_2d.applyballimpulse(id: integer, number, number) -> boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.setballcolor(id: integer, r: integer, g: integer, b: "
+        "integer, alpha: optional integer)");
+    ImGui::TextWrapped("  scene_2d.createoctagon() -> integer");
+    ImGui::TextWrapped("  scene_2d.destroyoctagon(id: integer) -> boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.getoctagonpos(id: integer) -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.setoctagonpos(id: integer, number, number) -> boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.getoctagonvel(id: integer) -> number, number");
+    ImGui::TextWrapped(
+        "  scene_2d.applyoctagonimpulse(id: integer, number, number) -> "
+        "boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.setoctagoncolor(id: integer, r: integer, g: integer, b: "
+        "integer, alpha: optional integer)");
     ImGui::TextWrapped("  scene_2d.createtrapezoid() -> integer");
     ImGui::TextWrapped("  scene_2d.destroytrapezoid(id: integer) -> boolean");
     ImGui::TextWrapped(
@@ -159,6 +176,9 @@ void SceneSystem::draw() {
     ImGui::TextWrapped(
         "  scene_2d.applytrapezoidimpulse(id: integer, number, number) -> "
         "boolean");
+    ImGui::TextWrapped(
+        "  scene_2d.settrapezoidcolor(id: integer, r: integer, g: integer, b: "
+        "integer, alpha: optional integer)");
 
     ImGui::EndTabItem();
   }

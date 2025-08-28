@@ -300,6 +300,79 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   return 0;
 }
 
+int lua_interface_set_ball_color(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
+      (lua_gettop(lctx) == 4 &&
+       (lua_isinteger(lctx, -4) != 1 || lua_isinteger(lctx, -3) != 1 ||
+        lua_isinteger(lctx, -2) != 1 || lua_isinteger(lctx, -1) != 1 ||
+        lua_tointeger(lctx, -3) < 0 || lua_tointeger(lctx, -3) > 255 ||
+        lua_tointeger(lctx, -2) < 0 || lua_tointeger(lctx, -2) > 255 ||
+        lua_tointeger(lctx, -1) < 0 || lua_tointeger(lctx, -1) > 255)) ||
+      (lua_gettop(lctx) == 5 &&
+       (lua_isinteger(lctx, -5) != 1 || lua_isinteger(lctx, -4) != 1 ||
+        lua_isinteger(lctx, -3) != 1 || lua_isinteger(lctx, -2) != 1 ||
+        lua_isinteger(lctx, -1) != 1 || lua_tointeger(lctx, -4) < 0 ||
+        lua_tointeger(lctx, -4) > 255 || lua_tointeger(lctx, -3) < 0 ||
+        lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
+        lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
+        lua_tointeger(lctx, -1) > 255))) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out = std::format(
+          "\"{}\" expects 4-5 args: integer (ball id), integer (red 0-255), "
+          "integer (green 0-255), integer (blue 0-255), integer (optional; "
+          "alpha 0-255)!",
+          name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  if (lua_gettop(lctx) == 4) {
+    scene->set_ball_color(
+        lua_tointeger(lctx, -4),
+        Color{static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -1)), 255});
+  } else if (lua_gettop(lctx) == 5) {
+    scene->set_ball_color(lua_tointeger(lctx, -5),
+                          Color{static_cast<uint8_t>(lua_tointeger(lctx, -4)),
+                                static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+                                static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+                                static_cast<uint8_t>(lua_tointeger(lctx, -1))});
+  }
+
+  return 0;
+}
+
 int lua_interface_create_octagon(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
@@ -569,6 +642,80 @@ int lua_interface_apply_octagon_impulse(lua_State *lctx) {
 
   scene->apply_octagon_impulse(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                                lua_tonumber(lctx, -1));
+
+  return 0;
+}
+
+int lua_interface_set_octagon_color(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
+      (lua_gettop(lctx) == 4 &&
+       (lua_isinteger(lctx, -4) != 1 || lua_isinteger(lctx, -3) != 1 ||
+        lua_isinteger(lctx, -2) != 1 || lua_isinteger(lctx, -1) != 1 ||
+        lua_tointeger(lctx, -3) < 0 || lua_tointeger(lctx, -3) > 255 ||
+        lua_tointeger(lctx, -2) < 0 || lua_tointeger(lctx, -2) > 255 ||
+        lua_tointeger(lctx, -1) < 0 || lua_tointeger(lctx, -1) > 255)) ||
+      (lua_gettop(lctx) == 5 &&
+       (lua_isinteger(lctx, -5) != 1 || lua_isinteger(lctx, -4) != 1 ||
+        lua_isinteger(lctx, -3) != 1 || lua_isinteger(lctx, -2) != 1 ||
+        lua_isinteger(lctx, -1) != 1 || lua_tointeger(lctx, -4) < 0 ||
+        lua_tointeger(lctx, -4) > 255 || lua_tointeger(lctx, -3) < 0 ||
+        lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
+        lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
+        lua_tointeger(lctx, -1) > 255))) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out = std::format(
+          "\"{}\" expects 4-5 args: integer (octagon id), integer (red 0-255), "
+          "integer (green 0-255), integer (blue 0-255), integer (optional; "
+          "alpha 0-255)!",
+          name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  if (lua_gettop(lctx) == 4) {
+    scene->set_octagon_color(
+        lua_tointeger(lctx, -4),
+        Color{static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -1)), 255});
+  } else if (lua_gettop(lctx) == 5) {
+    scene->set_octagon_color(
+        lua_tointeger(lctx, -5),
+        Color{static_cast<uint8_t>(lua_tointeger(lctx, -4)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -1))});
+  }
 
   return 0;
 }
@@ -844,6 +991,81 @@ int lua_interface_apply_trapezoid_impulse(lua_State *lctx) {
   return 0;
 }
 
+int lua_interface_set_trapezoid_color(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
+      (lua_gettop(lctx) == 4 &&
+       (lua_isinteger(lctx, -4) != 1 || lua_isinteger(lctx, -3) != 1 ||
+        lua_isinteger(lctx, -2) != 1 || lua_isinteger(lctx, -1) != 1 ||
+        lua_tointeger(lctx, -3) < 0 || lua_tointeger(lctx, -3) > 255 ||
+        lua_tointeger(lctx, -2) < 0 || lua_tointeger(lctx, -2) > 255 ||
+        lua_tointeger(lctx, -1) < 0 || lua_tointeger(lctx, -1) > 255)) ||
+      (lua_gettop(lctx) == 5 &&
+       (lua_isinteger(lctx, -5) != 1 || lua_isinteger(lctx, -4) != 1 ||
+        lua_isinteger(lctx, -3) != 1 || lua_isinteger(lctx, -2) != 1 ||
+        lua_isinteger(lctx, -1) != 1 || lua_tointeger(lctx, -4) < 0 ||
+        lua_tointeger(lctx, -4) > 255 || lua_tointeger(lctx, -3) < 0 ||
+        lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
+        lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
+        lua_tointeger(lctx, -1) > 255))) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out = std::format(
+          "\"{}\" expects 4-5 args: integer (trapezoid id), integer (red "
+          "0-255), "
+          "integer (green 0-255), integer (blue 0-255), integer (optional; "
+          "alpha 0-255)!",
+          name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  if (lua_gettop(lctx) == 4) {
+    scene->set_trapezoid_color(
+        lua_tointeger(lctx, -4),
+        Color{static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -1)), 255});
+  } else if (lua_gettop(lctx) == 5) {
+    scene->set_trapezoid_color(
+        lua_tointeger(lctx, -5),
+        Color{static_cast<uint8_t>(lua_tointeger(lctx, -4)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -3)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -2)),
+              static_cast<uint8_t>(lua_tointeger(lctx, -1))});
+  }
+
+  return 0;
+}
+
 int lua_interface_helper_cleanup_ptr_holder(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr_ptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
@@ -966,6 +1188,11 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_setfield(lua_ctx, -2, "applyballimpulse");                   // -1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);      // +1
+  lua_pushstring(lua_ctx, "setballcolor");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_ball_color, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "setballcolor");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);      // +1
   lua_pushstring(lua_ctx, "createoctagon");                    // +1
   lua_pushcclosure(lua_ctx, lua_interface_create_octagon, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "createoctagon");                  // -1
@@ -994,6 +1221,11 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pushstring(lua_ctx, "applyoctagonimpulse");                     // +1
   lua_pushcclosure(lua_ctx, lua_interface_apply_octagon_impulse, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "applyoctagonimpulse");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);         // +1
+  lua_pushstring(lua_ctx, "setoctagoncolor");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_octagon_color, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "setoctagoncolor");                   // -1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);        // +1
   lua_pushstring(lua_ctx, "createtrapezoid");                    // +1
@@ -1025,6 +1257,11 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pushcclosure(lua_ctx, lua_interface_apply_trapezoid_impulse,
                    2);                                 // -2, +1
   lua_setfield(lua_ctx, -2, "applytrapezoidimpulse");  // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);           // +1
+  lua_pushstring(lua_ctx, "settrapezoidcolor");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_trapezoid_color, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "settrapezoidcolor");                   // -1
 
   int ret = lua_getfield(lua_ctx, -1, "init");  // +1
   if (ret == LUA_TFUNCTION) {
@@ -1305,6 +1542,12 @@ void TwoDimWorldScene::apply_ball_impulse(uint32_t idx, float x, float y) {
   }
 }
 
+void TwoDimWorldScene::set_ball_color(uint32_t idx, Color color) {
+  if (auto iter = ball_ids.find(idx); iter != ball_ids.end()) {
+    iter->second.color = color;
+  }
+}
+
 uint32_t TwoDimWorldScene::create_octagon() {
   // Create dynamic body octagon
   b2BodyDef octagon_body = b2DefaultBodyDef();
@@ -1376,6 +1619,12 @@ void TwoDimWorldScene::apply_octagon_impulse(uint32_t idx, float x, float y) {
   }
 }
 
+void TwoDimWorldScene::set_octagon_color(uint32_t idx, Color color) {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
+    iter->second.color = color;
+  }
+}
+
 uint32_t TwoDimWorldScene::create_trapezoid() {
   // Create dynamic body trapezoid
   b2BodyDef t_body = b2DefaultBodyDef();
@@ -1443,6 +1692,12 @@ b2Vec2 TwoDimWorldScene::get_trapezoid_vel(uint32_t idx) const {
 void TwoDimWorldScene::apply_trapezoid_impulse(uint32_t idx, float x, float y) {
   if (auto iter = trapezoid_ids.find(idx); iter != trapezoid_ids.end()) {
     b2Body_ApplyLinearImpulseToCenter(iter->second.id, b2Vec2{x, y}, true);
+  }
+}
+
+void TwoDimWorldScene::set_trapezoid_color(uint32_t idx, Color color) {
+  if (auto iter = trapezoid_ids.find(idx); iter != trapezoid_ids.end()) {
+    iter->second.color = color;
   }
 }
 
