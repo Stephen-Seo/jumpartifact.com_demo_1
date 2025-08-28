@@ -982,7 +982,8 @@ b2Vec2 TwoDimWorldScene::get_ball_pos(uint32_t idx) const {
 
 void TwoDimWorldScene::set_ball_pos(uint32_t idx, float x, float y) {
   if (auto iter = ball_ids.find(idx); iter != ball_ids.end()) {
-    b2Body_SetTransform(iter->second.id, b2Vec2{x, y}, b2Rot{});
+    b2Rot rot = b2Body_GetRotation(iter->second.id);
+    b2Body_SetTransform(iter->second.id, b2Vec2{x, y}, rot);
   }
 }
 
