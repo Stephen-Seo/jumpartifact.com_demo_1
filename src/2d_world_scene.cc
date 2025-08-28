@@ -300,6 +300,279 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   return 0;
 }
 
+int lua_interface_create_octagon(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  uint32_t id = scene->create_octagon();
+
+  lua_pushinteger(lctx, id);
+  return 1;
+}
+
+int lua_interface_destroy_octagon(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" expects 1 argument: integer (octagon id).", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  bool ret = scene->destroy_octagon(lua_tointeger(lctx, -1));
+
+  lua_pushboolean(lctx, ret ? 1 : 0);
+  return 1;
+}
+
+int lua_interface_get_octagon_pos(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" expects 1 integer argument octagon id!", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  uint32_t idx = lua_tointeger(lctx, -1);
+
+  b2Vec2 pos = scene->get_octagon_pos(idx);
+
+  lua_pushnumber(lctx, pos.x);
+  lua_pushnumber(lctx, pos.y);
+
+  return 2;
+}
+
+int lua_interface_set_octagon_pos(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
+      lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out = std::format(
+          "\"{}\" expects 3 args: integer (octagon id), number (x pos), number "
+          "(y "
+          "pos)!",
+          name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  scene->set_octagon_pos(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
+                         lua_tonumber(lctx, -1));
+
+  return 0;
+}
+
+int lua_interface_get_octagon_vel(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" expects 1 integer argument octagon id!", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  uint32_t idx = lua_tointeger(lctx, -1);
+
+  b2Vec2 vel = scene->get_octagon_vel(idx);
+
+  lua_pushnumber(lctx, vel.x);
+  lua_pushnumber(lctx, vel.y);
+
+  return 2;
+}
+
+int lua_interface_apply_octagon_impulse(lua_State *lctx) {
+  std::weak_ptr<TDWSPtrHolder> *wptr =
+      reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
+          lua_touserdata(lctx, lua_upvalueindex(1)));
+
+  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  std::shared_ptr<TDWSPtrHolder> *sptr =
+      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+
+  if (!(*sptr)) {
+    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+    std::free(sptr_data);
+
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out =
+          std::format("\"{}\" is only available in 2DSimulation Scene.", name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+  TwoDimWorldScene *scene = (*sptr)->scene_ptr;
+  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
+  std::free(sptr_data);
+
+  if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
+      lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    {
+      const char *name = lua_tostring(lctx, lua_upvalueindex(2));
+      std::string out = std::format(
+          "\"{}\" expects 3 args: integer (octagon id), number (x), number "
+          "(y)!",
+          name);
+      std::println(stdout, "{}", out);
+      lua_pushstring(lctx, out.c_str());
+    }
+
+    return lua_error(lctx);
+  }
+
+  scene->apply_octagon_impulse(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
+                               lua_tonumber(lctx, -1));
+
+  return 0;
+}
+
 int lua_interface_create_trapezoid(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
@@ -602,6 +875,7 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
       rand_e(std::random_device()()),
       real_dist(),
       ball_idx_counter(0),
+      octagon_idx_counter(0),
       trapezoid_idx_counter(0) {
   if (!ctx->get_map_value("lua_state").has_value()) {
     ctx->init_lua();
@@ -690,6 +964,36 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pushstring(lua_ctx, "applyballimpulse");                     // +1
   lua_pushcclosure(lua_ctx, lua_interface_apply_ball_impulse, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "applyballimpulse");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);      // +1
+  lua_pushstring(lua_ctx, "createoctagon");                    // +1
+  lua_pushcclosure(lua_ctx, lua_interface_create_octagon, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "createoctagon");                  // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);       // +1
+  lua_pushstring(lua_ctx, "destroyoctagon");                    // +1
+  lua_pushcclosure(lua_ctx, lua_interface_destroy_octagon, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "destroyoctagon");                  // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);       // +1
+  lua_pushstring(lua_ctx, "getoctagonpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_octagon_pos, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "getoctagonpos");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);       // +1
+  lua_pushstring(lua_ctx, "setoctagonpos");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_set_octagon_pos, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "setoctagonpos");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);       // +1
+  lua_pushstring(lua_ctx, "getoctagonvel");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_get_octagon_vel, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "getoctagonvel");                   // -1
+
+  lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);             // +1
+  lua_pushstring(lua_ctx, "applyoctagonimpulse");                     // +1
+  lua_pushcclosure(lua_ctx, lua_interface_apply_octagon_impulse, 2);  // -2, +1
+  lua_setfield(lua_ctx, -2, "applyoctagonimpulse");                   // -1
 
   lua_interface_helper_push_ptr_holder(lua_ctx, ptr_ctx);        // +1
   lua_pushstring(lua_ctx, "createtrapezoid");                    // +1
@@ -873,21 +1177,28 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
                 PIXEL_B2UNIT_RATIO * WALL_HH * 2.0F, BROWN);
 
   // Draw ball
-  Vector2 b_vertices[8];
   for (auto iter = ball_ids.begin(); iter != ball_ids.end(); ++iter) {
-    // b2Vec2 ball_pos = b2Body_GetPosition(iter->second.id);
-    // DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y *
+    b2Vec2 pos = b2Body_GetPosition(iter->second.id);
+    DrawCircle(pos.x * PIXEL_B2UNIT_RATIO, pos.y * PIXEL_B2UNIT_RATIO,
+               BALL_R * PIXEL_B2UNIT_RATIO, iter->second.color);
+  }
+
+  // Draw octagon
+  Vector2 b_vertices[8];
+  for (auto iter = octagon_ids.begin(); iter != octagon_ids.end(); ++iter) {
+    // b2Vec2 octagon_pos = b2Body_GetPosition(iter->second.id);
+    // DrawCircle(octagon_pos.x * PIXEL_B2UNIT_RATIO, octagon_pos.y *
     // PIXEL_B2UNIT_RATIO,
     //            BALL_R * PIXEL_B2UNIT_RATIO, iter->second.color);
     b2Transform b_tr = b2Body_GetTransform(iter->second.id);
     for (int idx = 0; idx < 8; ++idx) {
       b_vertices[7 - idx].x =
-          (b_tr.p.x + b_tr.q.c * cached_ball_polygon->vertices[idx].x -
-           b_tr.q.s * cached_ball_polygon->vertices[idx].y) *
+          (b_tr.p.x + b_tr.q.c * cached_octagon_polygon->vertices[idx].x -
+           b_tr.q.s * cached_octagon_polygon->vertices[idx].y) *
           PIXEL_B2UNIT_RATIO;
       b_vertices[7 - idx].y =
-          (b_tr.p.y + b_tr.q.s * cached_ball_polygon->vertices[idx].x +
-           b_tr.q.c * cached_ball_polygon->vertices[idx].y) *
+          (b_tr.p.y + b_tr.q.s * cached_octagon_polygon->vertices[idx].x +
+           b_tr.q.c * cached_octagon_polygon->vertices[idx].y) *
           PIXEL_B2UNIT_RATIO;
     }
 
@@ -934,26 +1245,19 @@ uint32_t TwoDimWorldScene::create_ball() {
   // Create dynamic body ball
   b2BodyDef ball_body = b2DefaultBodyDef();
   ball_body.type = b2_dynamicBody;
-  ball_body.position = b2Vec2{1.7F, -get_rand() * 5.0F};
+  ball_body.position = b2Vec2{1.5F, -get_rand() * 5.0F};
   std::println("Created ball at {}, {}", ball_body.position.x,
                ball_body.position.y);
   b2BodyId ball_id = b2CreateBody(this->world_id, &ball_body);
   b2Body_SetLinearVelocity(ball_id, {-1.0F, 0.0F});
 
-  b2Hull b_hull = b2ComputeHull(B_POINTS, 8);
-  b2Polygon b_polygon = b2MakePolygon(&b_hull, 0.0F);
+  b2Circle circle{{0.0F, 0.0F}, BALL_R};
   b2ShapeDef b_shape_def = b2DefaultShapeDef();
   b_shape_def.density = 1.0F;
   b_shape_def.material.friction = 0.3F;
   b_shape_def.material.restitution = 0.4F;
   b_shape_def.material.rollingResistance = 0.15F;
-  b2CreatePolygonShape(ball_id, &b_shape_def, &b_polygon);
-
-  if (!cached_ball_polygon.has_value()) {
-    b2ShapeId b_shape;
-    b2Body_GetShapes(ball_id, &b_shape, 1);
-    cached_ball_polygon = b2Shape_GetPolygon(b_shape);
-  }
+  b2CreateCircleShape(ball_id, &b_shape_def, &circle);
 
   while (ball_ids.contains(ball_idx_counter)) {
     ++ball_idx_counter;
@@ -997,6 +1301,77 @@ b2Vec2 TwoDimWorldScene::get_ball_vel(uint32_t idx) const {
 
 void TwoDimWorldScene::apply_ball_impulse(uint32_t idx, float x, float y) {
   if (auto iter = ball_ids.find(idx); iter != ball_ids.end()) {
+    b2Body_ApplyLinearImpulseToCenter(iter->second.id, b2Vec2{x, y}, true);
+  }
+}
+
+uint32_t TwoDimWorldScene::create_octagon() {
+  // Create dynamic body octagon
+  b2BodyDef octagon_body = b2DefaultBodyDef();
+  octagon_body.type = b2_dynamicBody;
+  octagon_body.position = b2Vec2{1.7F, -get_rand() * 5.0F};
+  std::println("Created octagon at {}, {}", octagon_body.position.x,
+               octagon_body.position.y);
+  b2BodyId octagon_id = b2CreateBody(this->world_id, &octagon_body);
+  b2Body_SetLinearVelocity(octagon_id, {-1.0F, 0.0F});
+
+  b2Hull b_hull = b2ComputeHull(B_POINTS, 8);
+  b2Polygon b_polygon = b2MakePolygon(&b_hull, 0.0F);
+  b2ShapeDef b_shape_def = b2DefaultShapeDef();
+  b_shape_def.density = 1.0F;
+  b_shape_def.material.friction = 0.3F;
+  b_shape_def.material.restitution = 0.4F;
+  b_shape_def.material.rollingResistance = 0.15F;
+  b2CreatePolygonShape(octagon_id, &b_shape_def, &b_polygon);
+
+  if (!cached_octagon_polygon.has_value()) {
+    b2ShapeId b_shape;
+    b2Body_GetShapes(octagon_id, &b_shape, 1);
+    cached_octagon_polygon = b2Shape_GetPolygon(b_shape);
+  }
+
+  while (octagon_ids.contains(octagon_idx_counter)) {
+    ++octagon_idx_counter;
+  }
+  octagon_ids.insert({octagon_idx_counter++, {octagon_id, get_random_color()}});
+  return octagon_idx_counter - 1;
+}
+
+bool TwoDimWorldScene::destroy_octagon(uint32_t idx) {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
+    b2DestroyBody(iter->second.id);
+    octagon_ids.erase(iter);
+    return true;
+  }
+
+  return false;
+}
+
+b2Vec2 TwoDimWorldScene::get_octagon_pos(uint32_t idx) const {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
+    return b2Body_GetPosition(iter->second.id);
+  }
+
+  return {0, 0};
+}
+
+void TwoDimWorldScene::set_octagon_pos(uint32_t idx, float x, float y) {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
+    b2Rot rot = b2Body_GetRotation(iter->second.id);
+    b2Body_SetTransform(iter->second.id, b2Vec2{x, y}, rot);
+  }
+}
+
+b2Vec2 TwoDimWorldScene::get_octagon_vel(uint32_t idx) const {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
+    return b2Body_GetLinearVelocity(iter->second.id);
+  }
+
+  return {0, 0};
+}
+
+void TwoDimWorldScene::apply_octagon_impulse(uint32_t idx, float x, float y) {
+  if (auto iter = octagon_ids.find(idx); iter != octagon_ids.end()) {
     b2Body_ApplyLinearImpulseToCenter(iter->second.id, b2Vec2{x, y}, true);
   }
 }

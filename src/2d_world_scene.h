@@ -101,25 +101,34 @@ class TwoDimWorldScene : public Scene {
   b2Vec2 get_trapezoid_vel(uint32_t idx) const;
   void apply_trapezoid_impulse(uint32_t idx, float x, float y);
 
+  uint32_t create_octagon();
+  bool destroy_octagon(uint32_t idx);
+  b2Vec2 get_octagon_pos(uint32_t idx) const;
+  void set_octagon_pos(uint32_t idx, float x, float y);
+  b2Vec2 get_octagon_vel(uint32_t indx) const;
+  void apply_octagon_impulse(uint32_t idx, float x, float y);
+
   float get_rand();
 
  private:
   std::string lua_error_text;
   std::shared_ptr<TDWSPtrHolder> ptr_ctx;
   std::unordered_map<uint32_t, BodyInfo> ball_ids;
+  std::unordered_map<uint32_t, BodyInfo> octagon_ids;
   std::unordered_map<uint32_t, BodyInfo> trapezoid_ids;
   std::default_random_engine rand_e;
   std::uniform_real_distribution<float> real_dist;
   // 0 - error occurred
   // 1 - gamepad 0 is available
   std::bitset<32> flags;
-  std::optional<b2Polygon> cached_ball_polygon;
+  std::optional<b2Polygon> cached_octagon_polygon;
   std::optional<b2Polygon> cached_trapezoid_polygon;
   b2WorldId world_id;
   b2BodyId ground_id;
   b2BodyId left_wall_id;
   b2BodyId right_wall_id;
   uint32_t ball_idx_counter;
+  uint32_t octagon_idx_counter;
   uint32_t trapezoid_idx_counter;
 
   static Color get_random_color();
