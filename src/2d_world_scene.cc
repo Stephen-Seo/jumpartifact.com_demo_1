@@ -873,10 +873,25 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
                 PIXEL_B2UNIT_RATIO * WALL_HH * 2.0F, BROWN);
 
   // Draw ball
+  Vector2 b_vertices[8];
   for (auto iter = ball_ids.begin(); iter != ball_ids.end(); ++iter) {
-    b2Vec2 ball_pos = b2Body_GetPosition(iter->second.id);
-    DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y * PIXEL_B2UNIT_RATIO,
-               BALL_R * PIXEL_B2UNIT_RATIO, iter->second.color);
+    // b2Vec2 ball_pos = b2Body_GetPosition(iter->second.id);
+    // DrawCircle(ball_pos.x * PIXEL_B2UNIT_RATIO, ball_pos.y *
+    // PIXEL_B2UNIT_RATIO,
+    //            BALL_R * PIXEL_B2UNIT_RATIO, iter->second.color);
+    b2Transform b_tr = b2Body_GetTransform(iter->second.id);
+    for (int idx = 0; idx < 8; ++idx) {
+      b_vertices[7 - idx].x =
+          (b_tr.p.x + b_tr.q.c * cached_ball_polygon->vertices[idx].x -
+           b_tr.q.s * cached_ball_polygon->vertices[idx].y) *
+          PIXEL_B2UNIT_RATIO;
+      b_vertices[7 - idx].y =
+          (b_tr.p.y + b_tr.q.s * cached_ball_polygon->vertices[idx].x +
+           b_tr.q.c * cached_ball_polygon->vertices[idx].y) *
+          PIXEL_B2UNIT_RATIO;
+    }
+
+    DrawTriangleFan(b_vertices, 8, iter->second.color);
   }
 
   // Draw trapezoid
@@ -900,12 +915,10 @@ void TwoDimWorldScene::draw(SceneSystem *ctx) {
           PIXEL_B2UNIT_RATIO;
     }
 
-    DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
-                 Vector2{t_vertices[1].x, t_vertices[1].y},
-                 Vector2{t_vertices[0].x, t_vertices[0].y}, iter->second.color);
-    DrawTriangle(Vector2{t_vertices[2].x, t_vertices[2].y},
-                 Vector2{t_vertices[0].x, t_vertices[0].y},
-                 Vector2{t_vertices[3].x, t_vertices[3].y}, iter->second.color);
+    DrawTriangle(t_vertices[2], t_vertices[1], t_vertices[0],
+                 iter->second.color);
+    DrawTriangle(t_vertices[2], t_vertices[0], t_vertices[3],
+                 iter->second.color);
   }
 
   if (!lua_error_text.empty()) {
@@ -927,13 +940,20 @@ uint32_t TwoDimWorldScene::create_ball() {
   b2BodyId ball_id = b2CreateBody(this->world_id, &ball_body);
   b2Body_SetLinearVelocity(ball_id, {-1.0F, 0.0F});
 
-  b2Circle circle{b2Vec2{0.0F, 0.0F}, BALL_R};
-  b2ShapeDef ball_shape_def = b2DefaultShapeDef();
-  ball_shape_def.density = 1.0F;
-  ball_shape_def.material.friction = 0.3F;
-  ball_shape_def.material.restitution = 0.4F;
-  ball_shape_def.material.rollingResistance = 0.15F;
-  b2CreateCircleShape(ball_id, &ball_shape_def, &circle);
+  b2Hull b_hull = b2ComputeHull(B_POINTS, 8);
+  b2Polygon b_polygon = b2MakePolygon(&b_hull, 0.0F);
+  b2ShapeDef b_shape_def = b2DefaultShapeDef();
+  b_shape_def.density = 1.0F;
+  b_shape_def.material.friction = 0.3F;
+  b_shape_def.material.restitution = 0.4F;
+  b_shape_def.material.rollingResistance = 0.15F;
+  b2CreatePolygonShape(ball_id, &b_shape_def, &b_polygon);
+
+  if (!cached_ball_polygon.has_value()) {
+    b2ShapeId b_shape;
+    b2Body_GetShapes(ball_id, &b_shape, 1);
+    cached_ball_polygon = b2Shape_GetPolygon(b_shape);
+  }
 
   while (ball_ids.contains(ball_idx_counter)) {
     ++ball_idx_counter;

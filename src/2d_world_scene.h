@@ -27,10 +27,13 @@
 #include <bitset>
 #include <cstdint>
 #include <memory>
+#include <numbers>
 #include <optional>
 #include <random>
 #include <string>
 #include <unordered_map>
+
+using std::numbers::sqrt2_v;
 
 constexpr float PIXEL_B2UNIT_RATIO = 200.0F;
 
@@ -48,6 +51,15 @@ constexpr float WALL_HW = 0.1F;
 constexpr float WALL_HH = 1.5F;
 
 constexpr float BALL_R = 0.1F;
+constexpr b2Vec2 B_POINTS[8] = {
+    {0.0F, -BALL_R},
+    {BALL_R * sqrt2_v<float> / 2.0F, -BALL_R *sqrt2_v<float> / 2.0F},
+    {BALL_R, 0.0F},
+    {BALL_R * sqrt2_v<float> / 2.0F, BALL_R *sqrt2_v<float> / 2.0F},
+    {0.0F, BALL_R},
+    {-BALL_R * sqrt2_v<float> / 2.0F, BALL_R *sqrt2_v<float> / 2.0F},
+    {-BALL_R, 0.0F},
+    {-BALL_R * sqrt2_v<float> / 2.0F, -BALL_R *sqrt2_v<float> / 2.0F}};
 
 constexpr b2Vec2 T_POINTS[4] = {
     {0.1F, -0.1F}, {-0.1F, -0.1F}, {-0.15F, 0.1F}, {0.15F, 0.1F}};
@@ -101,6 +113,7 @@ class TwoDimWorldScene : public Scene {
   // 0 - error occurred
   // 1 - gamepad 0 is available
   std::bitset<32> flags;
+  std::optional<b2Polygon> cached_ball_polygon;
   std::optional<b2Polygon> cached_trapezoid_polygon;
   b2WorldId world_id;
   b2BodyId ground_id;
