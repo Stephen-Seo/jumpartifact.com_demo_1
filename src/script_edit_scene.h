@@ -158,7 +158,7 @@ const static char *DEFAULT_BALL_SCENE_SCRIPT =
     "    }\n"
     "    elapsed_temp -= 0.7\n"
     "  for k, v in pairs scene_2d.octagons\n"
-    "    scene_2d.setoctagoncolor k, 90, 90, 255\n"
+    "    scene_2d.setoctagoncolor k, 140, 160, 255\n"
     "    break\n"
     "scene_2d.update = (dt) ->\n"
     "  for k, v in pairs scene_2d.balls\n"
