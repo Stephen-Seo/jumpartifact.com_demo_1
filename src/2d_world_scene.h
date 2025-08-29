@@ -113,6 +113,8 @@ class TwoDimWorldScene : public Scene {
 
   float get_rand();
 
+  constexpr static float get_pixel_b2_ratio();
+
  private:
   std::string lua_error_text;
   std::shared_ptr<TDWSPtrHolder> ptr_ctx;

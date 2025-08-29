@@ -179,6 +179,7 @@ void SceneSystem::draw() {
     ImGui::TextWrapped(
         "  scene_2d.settrapezoidcolor(id: integer, r: integer, g: integer, b: "
         "integer, alpha: optional integer)");
+    ImGui::TextWrapped("  scene_2d.getpixelb2ratio() -> number");
 
     ImGui::EndTabItem();
   }

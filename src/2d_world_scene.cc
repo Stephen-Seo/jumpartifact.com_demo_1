@@ -1066,6 +1066,11 @@ int lua_interface_set_trapezoid_color(lua_State *lctx) {
   return 0;
 }
 
+int lua_interface_get_pixel_b2_ratio(lua_State *lctx) {
+  lua_pushnumber(lctx, TwoDimWorldScene::get_pixel_b2_ratio());
+  return 1;
+}
+
 int lua_interface_helper_cleanup_ptr_holder(lua_State *lctx) {
   std::weak_ptr<TDWSPtrHolder> *wptr_ptr =
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
@@ -1262,6 +1267,9 @@ TwoDimWorldScene::TwoDimWorldScene(SceneSystem *ctx)
   lua_pushstring(lua_ctx, "settrapezoidcolor");                     // +1
   lua_pushcclosure(lua_ctx, lua_interface_set_trapezoid_color, 2);  // -2, +1
   lua_setfield(lua_ctx, -2, "settrapezoidcolor");                   // -1
+
+  lua_pushcfunction(lua_ctx, lua_interface_get_pixel_b2_ratio);  // +1
+  lua_setfield(lua_ctx, -2, "getpixelb2ratio");                  // -1
 
   int ret = lua_getfield(lua_ctx, -1, "init");  // +1
   if (ret == LUA_TFUNCTION) {
@@ -1702,6 +1710,10 @@ void TwoDimWorldScene::set_trapezoid_color(uint32_t idx, Color color) {
 }
 
 float TwoDimWorldScene::get_rand() { return real_dist(rand_e); }
+
+constexpr float TwoDimWorldScene::get_pixel_b2_ratio() {
+  return PIXEL_B2UNIT_RATIO;
+}
 
 Color TwoDimWorldScene::get_random_color() {
   return Color{static_cast<uint8_t>(GetRandomValue(127, 255)),
