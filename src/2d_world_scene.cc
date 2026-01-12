@@ -34,6 +34,11 @@ int lua_interface_create_ball(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
+  // In this function and following other "lua_interface_*" functions, a ptr is
+  // initialized with malloc and placement-new. This is required because
+  // "lua_error(...)" does a long jump if it is ever called. To prepare for the
+  // long jump, the pointer is destructed and free'd before calling
+  // "lua_error(...)".
   void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
       new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
