@@ -1,4 +1,4 @@
-Patch lua/src/Makefile to build for emscripten.
+Patch lua to use emscripten.
 
 --- a/src/Makefile
 +++ b/src/Makefile
@@ -11,7 +11,7 @@ Patch lua/src/Makefile to build for emscripten.
  
 -CC= gcc -std=gnu99
 +CC= pushd $(dir ${EMSDK_SHELL}) >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emcc -std=gnu99
- CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+ CFLAGS= -O2 -Wall -Wextra $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
  

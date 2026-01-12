@@ -31,17 +31,17 @@ class SceneSystem;
 
 class Scene {
  public:
-  Scene(SceneSystem*);
+  Scene(SceneSystem *);
   virtual ~Scene();
 
-  virtual void update(SceneSystem* ctx, float dt) = 0;
-  virtual void draw(SceneSystem* ctx) = 0;
-  virtual void draw_rlimgui(SceneSystem* ctx) = 0;
+  virtual void update(SceneSystem *ctx, float dt) = 0;
+  virtual void draw(SceneSystem *ctx) = 0;
+  virtual void draw_rlimgui(SceneSystem *ctx) = 0;
 
   // Return true to ALLOW drawing lower scenes on stack.
-  virtual bool allow_draw_below(SceneSystem* ctx) = 0;
+  virtual bool allow_draw_below(SceneSystem *ctx) = 0;
 
-  std::optional<uint32_t> get_scene_id(SceneSystem* ctx);
+  std::optional<uint32_t> get_scene_id(SceneSystem *ctx);
 
  private:
 };
@@ -49,12 +49,12 @@ class Scene {
 class SceneSystem {
  public:
   using SceneType = std::unique_ptr<Scene>;
-  using SceneFnType = std::function<SceneType(SceneSystem*)>;
+  using SceneFnType = std::function<SceneType(SceneSystem *)>;
   using OptBuilderType = std::optional<SceneFnType>;
 
   using MapType =
       std::unordered_map<std::string,
-                         std::pair<void*, std::function<void(void*)> > >;
+                         std::pair<void *, std::function<void(void *)> > >;
 
   using FlagsType = std::bitset<32>;
 
@@ -62,12 +62,12 @@ class SceneSystem {
   ~SceneSystem();
 
   // Disable copy.
-  SceneSystem(const SceneSystem&) = delete;
-  SceneSystem& operator=(const SceneSystem&) = delete;
+  SceneSystem(const SceneSystem &) = delete;
+  SceneSystem &operator=(const SceneSystem &) = delete;
 
   // Enable move.
-  SceneSystem(SceneSystem&&) = default;
-  SceneSystem& operator=(SceneSystem&&) = default;
+  SceneSystem(SceneSystem &&) = default;
+  SceneSystem &operator=(SceneSystem &&) = default;
 
   void update();
   void draw();
@@ -78,20 +78,20 @@ class SceneSystem {
 
   bool pop_was_queued() const;
 
-  FlagsType& get_flags();
-  const FlagsType& get_flags() const;
+  FlagsType &get_flags();
+  const FlagsType &get_flags() const;
 
-  const std::deque<SceneType>* get_scene_stack() const;
-  std::optional<SceneType*> get_top();
+  const std::deque<SceneType> *get_scene_stack() const;
+  std::optional<SceneType *> get_top();
 
-  bool set_map_value(std::string name, void* value,
-                     std::function<void(void*)> cleanup_fn);
-  std::optional<void*> get_map_value(std::string name);
+  bool set_map_value(std::string name, void *value,
+                     std::function<void(void *)> cleanup_fn);
+  std::optional<void *> get_map_value(std::string name);
   bool clear_map_value(
       std::string name,
-      std::optional<std::function<void(void*)> > override_cleanup_fn);
+      std::optional<std::function<void(void *)> > override_cleanup_fn);
 
-  std::optional<uint32_t> get_scene_id(Scene*);
+  std::optional<uint32_t> get_scene_id(Scene *);
 
   template <typename SceneTypeT>
   uint32_t get_scene_id_by_template();

@@ -8,7 +8,7 @@ INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithir
 
 CURRENT_WORKING_DIR != pwd
 EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
-EMSDK_VERSION ?= 4.0.13
+EMSDK_VERSION ?= 4.0.23
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 EMSDK_SHELL_DIR != dirname ${EMSDK_SHELL}
 
@@ -16,22 +16,22 @@ RAYLIB_REPO_PATH ?= https://github.com/raysan5/raylib.git
 RAYLIB_VERSION_TAG ?= 5.5
 
 IMGUI_REPO_PATH ?= https://github.com/ocornut/imgui.git
-IMGUI_VERSION_TAG ?= v1.92.2
+IMGUI_VERSION_TAG ?= v1.92.5
 
 RLIMGUI_REPO_PATH ?= https://github.com/raylib-extras/rlImGui.git
-RLIMGUI_COMMIT ?= 4d8a61842903978bc42adf3347cd34f4e6524efc
+RLIMGUI_COMMIT ?= dc7f97679a024eee8f5f009e77cc311748200415
 
-LUA_VERSION ?= 5.4.8
+LUA_VERSION ?= 5.5.0
 LUA_DL_LINK ?= https://lua.org/ftp/lua-${LUA_VERSION}.tar.gz
-LUA_TAR_SHA256SUM ?= 4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae
+LUA_TAR_SHA256SUM ?= 57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d
 
 LPEG_DL_LINK ?= https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz
 LPEG_TAR_SHA256SUM ?= 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
 
-MOONSCRIPT_VERSION_TAG ?= v0.5.0
+MOONSCRIPT_VERSION_TAG ?= v0.6.0
 MOONSCRIPT_VER_NUM := $(subst v0,0,${MOONSCRIPT_VERSION_TAG})
 MOONSCRIPT_DL_LINK ?= https://github.com/leafo/moonscript/archive/refs/tags/${MOONSCRIPT_VERSION_TAG}.tar.gz
-MOONSCRIPT_TAR_SHA256SUM ?= 1adb5bb38f9c6f306250f6e90d92796fe100408ee062ac0d14f3c4c22c92e682
+MOONSCRIPT_TAR_SHA256SUM ?= b98e58f4657ffc2e730904da0b4034796ff16f08e4e6c47c681905fd56509037
 
 BOX2D_VERSION_TAG ?= v3.1.1
 BOX2D_REPO_PATH ?= https://github.com/erincatto/box2d.git
@@ -201,4 +201,4 @@ update:
 	cd third_party/box2d_git && git fetch && git clean -xfd && git restore . && git checkout "${BOX2D_VERSION_TAG}"
 
 format:
-	test -x /usr/bin/clang-format && clang-format -i --style=Google ${SOURCES} ${HEADERS} || /usr/bin/true
+	test -x /usr/bin/clang-format && clang-format -i --style=file ${SOURCES} ${HEADERS} || /usr/bin/true
