@@ -35,17 +35,14 @@ int lua_interface_create_ball(lua_State *lctx) {
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
   // In this function and following other "lua_interface_*" functions, a ptr is
-  // initialized with malloc and placement-new. This is required because
-  // "lua_error(...)" does a long jump if it is ever called. To prepare for the
-  // long jump, the pointer is destructed and free'd before calling
-  // "lua_error(...)".
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
+  // initialized with "new". This is required because "lua_error(...)" does a
+  // long jump if it is ever called. To prepare for the long jump, the pointer
+  // is destructed with "delete" before calling "lua_error(...)".
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -58,12 +55,11 @@ int lua_interface_create_ball(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   uint32_t id = scene->create_ball();
 
   lua_pushinteger(lctx, id);
+  delete sptr;
   return 1;
 }
 
@@ -72,13 +68,11 @@ int lua_interface_destroy_ball(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -91,10 +85,9 @@ int lua_interface_destroy_ball(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -109,6 +102,7 @@ int lua_interface_destroy_ball(lua_State *lctx) {
   bool ret = scene->destroy_ball(lua_tointeger(lctx, -1));
 
   lua_pushboolean(lctx, ret ? 1 : 0);
+  delete sptr;
   return 1;
 }
 
@@ -117,13 +111,11 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -136,10 +128,9 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -158,6 +149,7 @@ int lua_interface_get_ball_pos(lua_State *lctx) {
   lua_pushnumber(lctx, pos.x);
   lua_pushnumber(lctx, pos.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -166,13 +158,11 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -185,11 +175,10 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -206,6 +195,7 @@ int lua_interface_set_ball_pos(lua_State *lctx) {
   scene->set_ball_pos(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                       lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -214,13 +204,11 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -233,10 +221,9 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -255,6 +242,7 @@ int lua_interface_get_ball_vel(lua_State *lctx) {
   lua_pushnumber(lctx, vel.x);
   lua_pushnumber(lctx, vel.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -263,13 +251,11 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -282,11 +268,10 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -302,6 +287,7 @@ int lua_interface_apply_ball_impulse(lua_State *lctx) {
   scene->apply_ball_impulse(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                             lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -310,13 +296,11 @@ int lua_interface_set_ball_color(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -329,8 +313,6 @@ int lua_interface_set_ball_color(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
       (lua_gettop(lctx) == 4 &&
@@ -347,6 +329,7 @@ int lua_interface_set_ball_color(lua_State *lctx) {
         lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
         lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
         lua_tointeger(lctx, -1) > 255))) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -375,6 +358,7 @@ int lua_interface_set_ball_color(lua_State *lctx) {
                                 static_cast<uint8_t>(lua_tointeger(lctx, -1))});
   }
 
+  delete sptr;
   return 0;
 }
 
@@ -383,13 +367,11 @@ int lua_interface_create_octagon(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -402,12 +384,11 @@ int lua_interface_create_octagon(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   uint32_t id = scene->create_octagon();
 
   lua_pushinteger(lctx, id);
+  delete sptr;
   return 1;
 }
 
@@ -416,13 +397,11 @@ int lua_interface_destroy_octagon(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -435,10 +414,9 @@ int lua_interface_destroy_octagon(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -453,6 +431,7 @@ int lua_interface_destroy_octagon(lua_State *lctx) {
   bool ret = scene->destroy_octagon(lua_tointeger(lctx, -1));
 
   lua_pushboolean(lctx, ret ? 1 : 0);
+  delete sptr;
   return 1;
 }
 
@@ -461,13 +440,11 @@ int lua_interface_get_octagon_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -480,10 +457,9 @@ int lua_interface_get_octagon_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -502,6 +478,7 @@ int lua_interface_get_octagon_pos(lua_State *lctx) {
   lua_pushnumber(lctx, pos.x);
   lua_pushnumber(lctx, pos.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -510,13 +487,11 @@ int lua_interface_set_octagon_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -529,11 +504,10 @@ int lua_interface_set_octagon_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -551,6 +525,7 @@ int lua_interface_set_octagon_pos(lua_State *lctx) {
   scene->set_octagon_pos(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                          lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -559,13 +534,11 @@ int lua_interface_get_octagon_vel(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -578,10 +551,9 @@ int lua_interface_get_octagon_vel(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -600,6 +572,7 @@ int lua_interface_get_octagon_vel(lua_State *lctx) {
   lua_pushnumber(lctx, vel.x);
   lua_pushnumber(lctx, vel.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -608,13 +581,11 @@ int lua_interface_apply_octagon_impulse(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -627,11 +598,10 @@ int lua_interface_apply_octagon_impulse(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -648,6 +618,7 @@ int lua_interface_apply_octagon_impulse(lua_State *lctx) {
   scene->apply_octagon_impulse(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                                lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -656,13 +627,11 @@ int lua_interface_set_octagon_color(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -675,8 +644,6 @@ int lua_interface_set_octagon_color(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
       (lua_gettop(lctx) == 4 &&
@@ -693,6 +660,7 @@ int lua_interface_set_octagon_color(lua_State *lctx) {
         lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
         lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
         lua_tointeger(lctx, -1) > 255))) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -722,6 +690,7 @@ int lua_interface_set_octagon_color(lua_State *lctx) {
               static_cast<uint8_t>(lua_tointeger(lctx, -1))});
   }
 
+  delete sptr;
   return 0;
 }
 
@@ -730,13 +699,11 @@ int lua_interface_create_trapezoid(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -749,12 +716,11 @@ int lua_interface_create_trapezoid(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   uint32_t id = scene->create_trapezoid();
 
   lua_pushinteger(lctx, id);
+  delete sptr;
   return 1;
 }
 
@@ -763,13 +729,11 @@ int lua_interface_destroy_trapezoid(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -782,10 +746,9 @@ int lua_interface_destroy_trapezoid(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -800,6 +763,7 @@ int lua_interface_destroy_trapezoid(lua_State *lctx) {
   bool ret = scene->destroy_trapezoid(lua_tointeger(lctx, -1));
 
   lua_pushboolean(lctx, ret ? 1 : 0);
+  delete sptr;
   return 1;
 }
 
@@ -808,13 +772,11 @@ int lua_interface_get_trapezoid_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -827,10 +789,9 @@ int lua_interface_get_trapezoid_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -849,6 +810,7 @@ int lua_interface_get_trapezoid_pos(lua_State *lctx) {
   lua_pushnumber(lctx, pos.x);
   lua_pushnumber(lctx, pos.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -857,13 +819,11 @@ int lua_interface_set_trapezoid_pos(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -876,11 +836,10 @@ int lua_interface_set_trapezoid_pos(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -897,6 +856,7 @@ int lua_interface_set_trapezoid_pos(lua_State *lctx) {
   scene->set_trapezoid_pos(lua_tointeger(lctx, -3), lua_tonumber(lctx, -2),
                            lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -905,13 +865,11 @@ int lua_interface_get_trapezoid_vel(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -924,10 +882,9 @@ int lua_interface_get_trapezoid_vel(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 1 || lua_isinteger(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out =
@@ -946,6 +903,7 @@ int lua_interface_get_trapezoid_vel(lua_State *lctx) {
   lua_pushnumber(lctx, vel.x);
   lua_pushnumber(lctx, vel.y);
 
+  delete sptr;
   return 2;
 }
 
@@ -954,13 +912,11 @@ int lua_interface_apply_trapezoid_impulse(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -973,11 +929,10 @@ int lua_interface_apply_trapezoid_impulse(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) != 3 || lua_isinteger(lctx, -3) != 1 ||
       lua_isnumber(lctx, -2) != 1 || lua_isnumber(lctx, -1) != 1) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -993,6 +948,7 @@ int lua_interface_apply_trapezoid_impulse(lua_State *lctx) {
   scene->apply_trapezoid_impulse(
       lua_tointeger(lctx, -3), lua_tonumber(lctx, -2), lua_tonumber(lctx, -1));
 
+  delete sptr;
   return 0;
 }
 
@@ -1001,13 +957,11 @@ int lua_interface_set_trapezoid_color(lua_State *lctx) {
       reinterpret_cast<std::weak_ptr<TDWSPtrHolder> *>(
           lua_touserdata(lctx, lua_upvalueindex(1)));
 
-  void *sptr_data = std::malloc(sizeof(std::shared_ptr<TDWSPtrHolder>));
   std::shared_ptr<TDWSPtrHolder> *sptr =
-      new (sptr_data) std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
+      new std::shared_ptr<TDWSPtrHolder>(std::move(wptr->lock()));
 
   if (!(*sptr)) {
-    sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-    std::free(sptr_data);
+    delete sptr;
 
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
@@ -1020,8 +974,6 @@ int lua_interface_set_trapezoid_color(lua_State *lctx) {
     return lua_error(lctx);
   }
   TwoDimWorldScene *scene = (*sptr)->scene_ptr;
-  sptr->std::shared_ptr<TDWSPtrHolder>::~shared_ptr();
-  std::free(sptr_data);
 
   if (lua_gettop(lctx) < 4 || lua_gettop(lctx) > 5 ||
       (lua_gettop(lctx) == 4 &&
@@ -1038,6 +990,7 @@ int lua_interface_set_trapezoid_color(lua_State *lctx) {
         lua_tointeger(lctx, -3) > 255 || lua_tointeger(lctx, -2) < 0 ||
         lua_tointeger(lctx, -2) > 255 || lua_tointeger(lctx, -1) < 0 ||
         lua_tointeger(lctx, -1) > 255))) {
+    delete sptr;
     {
       const char *name = lua_tostring(lctx, lua_upvalueindex(2));
       std::string out = std::format(
@@ -1068,6 +1021,7 @@ int lua_interface_set_trapezoid_color(lua_State *lctx) {
               static_cast<uint8_t>(lua_tointeger(lctx, -1))});
   }
 
+  delete sptr;
   return 0;
 }
 
