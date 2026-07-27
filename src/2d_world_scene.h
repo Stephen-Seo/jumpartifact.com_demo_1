@@ -53,13 +53,13 @@ constexpr float WALL_HH = 1.5F;
 constexpr float BALL_R = 0.1F;
 constexpr b2Vec2 B_POINTS[8] = {
     {0.0F, -BALL_R},
-    {BALL_R * sqrt2_v<float> / 2.0F, -BALL_R *sqrt2_v<float> / 2.0F},
+    {BALL_R * sqrt2_v<float> / 2.0F, -BALL_R * sqrt2_v<float> / 2.0F},
     {BALL_R, 0.0F},
-    {BALL_R * sqrt2_v<float> / 2.0F, BALL_R *sqrt2_v<float> / 2.0F},
+    {BALL_R * sqrt2_v<float> / 2.0F, BALL_R * sqrt2_v<float> / 2.0F},
     {0.0F, BALL_R},
-    {-BALL_R * sqrt2_v<float> / 2.0F, BALL_R *sqrt2_v<float> / 2.0F},
+    {-BALL_R * sqrt2_v<float> / 2.0F, BALL_R * sqrt2_v<float> / 2.0F},
     {-BALL_R, 0.0F},
-    {-BALL_R * sqrt2_v<float> / 2.0F, -BALL_R *sqrt2_v<float> / 2.0F}};
+    {-BALL_R * sqrt2_v<float> / 2.0F, -BALL_R * sqrt2_v<float> / 2.0F}};
 
 constexpr b2Vec2 T_POINTS[4] = {
     {0.1F, -0.1F}, {-0.1F, -0.1F}, {-0.15F, 0.1F}, {0.15F, 0.1F}};
