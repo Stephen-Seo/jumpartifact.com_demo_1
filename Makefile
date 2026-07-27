@@ -8,7 +8,7 @@ INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithir
 
 CURRENT_WORKING_DIR != pwd
 EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
-EMSDK_VERSION ?= 4.0.23
+EMSDK_VERSION ?= 6.0.4
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 EMSDK_SHELL_DIR != dirname ${EMSDK_SHELL}
 
