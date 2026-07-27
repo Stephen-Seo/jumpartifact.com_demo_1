@@ -13,13 +13,13 @@ EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 EMSDK_SHELL_DIR != dirname ${EMSDK_SHELL}
 
 RAYLIB_REPO_PATH ?= https://github.com/raysan5/raylib.git
-RAYLIB_VERSION_TAG ?= 5.5
+RAYLIB_VERSION_TAG ?= 6.0
 
 IMGUI_REPO_PATH ?= https://github.com/ocornut/imgui.git
-IMGUI_VERSION_TAG ?= v1.92.5
+IMGUI_VERSION_TAG ?= v1.92.9
 
 RLIMGUI_REPO_PATH ?= https://github.com/raylib-extras/rlImGui.git
-RLIMGUI_COMMIT ?= dc7f97679a024eee8f5f009e77cc311748200415
+RLIMGUI_COMMIT ?= db8239140a68bf9a07f4499d2875d7cefa8fa7e6
 
 LUA_VERSION ?= 5.5.0
 LUA_DL_LINK ?= https://lua.org/ftp/lua-${LUA_VERSION}.tar.gz
@@ -65,7 +65,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh third_party/raylib_git
 	cd third_party/raylib_git && git clean -xfd && git restore . && patch -N -p1 < ${CURRENT_WORKING_DIR}/third_party/raylib_noF12.patch
 	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && ${MAKE} PLATFORM=PLATFORM_WEB -C third_party/raylib_git/src
-	install -D -m444 third_party/raylib_git/src/libraylib.a third_party/raylib_out/lib/libraylib.a
+	install -D -m444 third_party/raylib_git/src/libraylib.web.a third_party/raylib_out/lib/libraylib.a
 	cd third_party/raylib_git && git clean -xfd && git restore .
 
 third_party/raylib_out/include/raylib.h third_party/raylib_out/include/raymath.h third_party/raylib_out/include/rlgl.h: third_party/raylib_git
