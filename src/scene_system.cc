@@ -22,6 +22,7 @@ extern "C" {
 #include <lualib.h>
 }
 #include <lpeg_exported.h>
+#include <moonscript_parser.h>
 #ifndef NDEBUG
 #include <emscripten/console.h>
 #endif
@@ -391,6 +392,9 @@ void SceneSystem::init_lua() {
                             std::ios_base::out | std::ios_base::trunc);
   lua_lpeg_of << "return luaopen_lpeg_global()";
   lua_lpeg_of.close();
+
+  luaopen_moonscript_parse_native(lua_ctx);  // +1 table with moonscript fns
+  lua_setglobal(lua_ctx, "moonscript_parse_native");  // -1
 
   lua_newtable(lua_ctx);               // +1
   lua_setglobal(lua_ctx, "scene_2d");  // -1

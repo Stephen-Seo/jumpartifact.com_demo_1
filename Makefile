@@ -4,11 +4,11 @@ else
 	COMMON_FLAGS := -sASSERTIONS
 endif
 
-INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git -Ithird_party/lua_out/include -Ithird_party/lpeg_out/include -Ithird_party/box2d_git/include
+INCLUDE_FLAGS := -Ithird_party/raylib_out/include -Ithird_party/imgui_git -Ithird_party/rlImGui_git -Ithird_party/lua_out/include -Ithird_party/lpeg_out/include -Ithird_party/box2d_git/include -Ithird_party
 
 CURRENT_WORKING_DIR != pwd
 EMSDK_REPO_PATH ?= https://github.com/emscripten-core/emsdk.git
-EMSDK_VERSION ?= 6.0.4
+EMSDK_VERSION ?= 6.0.13
 EMSDK_SHELL ?= ${CURRENT_WORKING_DIR}/third_party/emsdk_git/emsdk_env.sh
 EMSDK_SHELL_DIR != dirname ${EMSDK_SHELL}
 
@@ -21,17 +21,17 @@ IMGUI_VERSION_TAG ?= v1.92.9
 RLIMGUI_REPO_PATH ?= https://github.com/raylib-extras/rlImGui.git
 RLIMGUI_COMMIT ?= db8239140a68bf9a07f4499d2875d7cefa8fa7e6
 
-LUA_VERSION ?= 5.5.0
+LUA_VERSION ?= 5.5.1
 LUA_DL_LINK ?= https://lua.org/ftp/lua-${LUA_VERSION}.tar.gz
-LUA_TAR_SHA256SUM ?= 57ccc32bbbd005cab75bcc52444052535af691789dba2b9016d5c50640d68b3d
+LUA_TAR_SHA256SUM ?= 1c4b4068d67061f2a2231ad2b5422e77acea1487ea9890f6320af614f4373dce
 
 LPEG_DL_LINK ?= https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz
 LPEG_TAR_SHA256SUM ?= 4b155d67d2246c1ffa7ad7bc466c1ea899bbc40fef0257cc9c03cecbaed4352a
 
-MOONSCRIPT_VERSION_TAG ?= v0.7.0
+MOONSCRIPT_VERSION_TAG ?= v0.8.0
 MOONSCRIPT_VER_NUM := $(subst v0,0,${MOONSCRIPT_VERSION_TAG})
 MOONSCRIPT_DL_LINK ?= https://github.com/leafo/moonscript/archive/refs/tags/${MOONSCRIPT_VERSION_TAG}.tar.gz
-MOONSCRIPT_TAR_SHA256SUM ?= 98fcf86d47694c81ccf9012e310f86d443ddf516e90b267ea33eb7ff1b0747c4
+MOONSCRIPT_TAR_SHA256SUM ?= 0458ba86359c9089f823f81e4198ea3f7d57c2f2773fb8a1364940ebdd802ac5
 
 BOX2D_VERSION_TAG ?= v3.1.1
 BOX2D_REPO_PATH ?= https://github.com/erincatto/box2d.git
@@ -44,7 +44,7 @@ OBJECTS := $(addprefix ${OBJDIR}/,$(subst .cc,.cc.o,${SOURCES}))
 
 all: dist/index.html
 
-dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a assets_embed/moonscript third_party/box2d_out/lib/libbox2d.a
+dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/rlImGui.cpp.o third_party/imgui_out/libimgui.a ${OBJECTS} custom_shell.html third_party/lua_out/lib/liblua.a third_party/lpeg_out/lib/liblpeg.a third_party/moonscript_parser/libmoonscriptparser.a assets_embed/moonscript third_party/box2d_out/lib/libbox2d.a
 	@mkdir -p dist
 	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && em++ -std=c++23 -o dist/ja_demo1.html \
 		-s USE_GLFW=3 ${INCLUDE_FLAGS} \
@@ -53,6 +53,7 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		third_party/rlImGui_out/rlImGui.cpp.o \
 		-Lthird_party/lua_out/lib -llua \
 		-Lthird_party/lpeg_out/lib -llpeg \
+		-Lthird_party/moonscript_parser -lmoonscriptparser \
 		-Lthird_party/box2d_out/lib -lbox2d \
 		--embed-file assets_embed \
 		--shell-file custom_shell.html \
@@ -61,6 +62,13 @@ dist/index.html: third_party/raylib_out/lib/libraylib.a third_party/rlImGui_out/
 		${COMMON_FLAGS} \
 		${OBJECTS}
 	ln -sf ja_demo1.html dist/index.html
+
+third_party/moonscript_parser/libmoonscriptparser.a: third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz third_party/lua-${LUA_VERSION}.tar.gz
+	@mkdir -p third_party/moonscript_parser/build
+	tar -xf third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz -C third_party/moonscript_parser/build
+	tar -xf third_party/lua-${LUA_VERSION}.tar.gz -C third_party/moonscript_parser/build
+	pushd ${EMSDK_SHELL_DIR} >&/dev/null && source ${EMSDK_SHELL} >&/dev/null && popd >&/dev/null && emcc -c -Ithird_party/moonscript_parser/build/lua-${LUA_VERSION}/src -o third_party/moonscript_parser/build/native.o third_party/moonscript_parser/build/moonscript-${MOONSCRIPT_VER_NUM}/moonscript/parse/native.c && emar rcu third_party/moonscript_parser/libmoonscriptparser.a  third_party/moonscript_parser/build/native.o
+	rm -rf third_party/moonscript_parser/build
 
 third_party/raylib_out/lib/libraylib.a: third_party/emsdk_git/emsdk_env.sh third_party/raylib_git
 	cd third_party/raylib_git && git clean -xfd && git restore . && patch -N -p1 < ${CURRENT_WORKING_DIR}/third_party/raylib_noF12.patch
@@ -161,6 +169,8 @@ assets_embed/moonscript: third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz
 	cd /tmp/${USER}_JADEMO1_TEMP && tar -xf ${CURRENT_WORKING_DIR}/third_party/moonscript_${MOONSCRIPT_VERSION_TAG}.tar.gz moonscript-${MOONSCRIPT_VER_NUM}/moonscript
 	cp -r /tmp/${USER}_JADEMO1_TEMP/moonscript-${MOONSCRIPT_VER_NUM}/moonscript ./assets_embed/
 	rm -rf /tmp/${USER}_JADEMO1_TEMP/
+	find assets_embed/moonscript -name '*.lua' -execdir sed -i -e 's/require("moonscript.parse.native")/moonscript_parse_native/' '{}' ';'
+	find assets_embed/moonscript -name '*.moon' -execdir sed -i -e 's/require "moonscript.parse.native"/moonscript_parse_native/' '{}' ';'
 
 third_party/box2d_git:
 	cd third_party && git clone ${BOX2D_REPO_PATH} box2d_git && cd box2d_git && git checkout ${BOX2D_VERSION_TAG}
@@ -185,6 +195,7 @@ clean:
 	rm -rf third_party/lpeg-1.1.0
 	rm -rf assets_embed/moonscript
 	rm -rf third_party/box2d_out
+	rm -rf third_party/moonscript_parser
 	(cd third_party/box2d_git && git clean -xfd && git restore .) || /usr/bin/true
 
 update:
